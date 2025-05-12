@@ -1,0 +1,67 @@
+:root {
+  --mc: #0055ff;
+  --white: #ffffff;
+  --black: #1b1b1f;
+  --startColor: #eef3fc ;
+  --endColor: #f0f5ff;
+  --mdbtn: #b8cbf0;
+  --bgcolor: var(--endColor);
+  --linegrad: linear-gradient(45deg,var(--startColor), var(--endColor));
+  --radius: 16px;
+  --textColor: #23375d;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+ul,li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body {
+  min-height: 100vh;
+  user-select: none;
+  color: var(--textColor);
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+::-webkit-scrollbar {
+  width:0px;
+  height: 4px;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  cursor: pointer;
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.5);
+  background-color: var(--mc);
+  border-radius: 4px;
+}
+
+audio{
+  display: none;
+}

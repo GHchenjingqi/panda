@@ -1,0 +1,30 @@
+@import './base.css';
+
+body{
+  border-radius: var(--radius);
+  overflow: hidden;
+  font-size: 16px;
+}
+
+#app{
+  background: var(--linegrad);
+  border-radius: var(--radius);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-attachment: fixed;
+}
+.tu{
+  background-color: var(--bgcolor);
+  border: 1px solid rgba(255, 255, 255, .86);
+  box-sizing: border-box;
+  box-shadow: 12px 12px 16px rgba(218, 228, 247, 0.4), 
+    -4px -6px 16px rgba(255, 255, 255, 0.9);
+}
+
+.ao{
+  background-color: var(--bgcolor);
+  border: 1px solid rgba(255, 255, 255, .86);
+  box-sizing: border-box;
+  box-shadow: inset 12px 12px 16px rgba(218, 228, 247, 0.4), 
+  inset  -4px -6px 16px rgba(255, 255, 255, 0.9);
+}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Electron</title>
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://ghchenjingqi.github.io https://restapi.amap.com; 
+      script-src 'self' https://ghchenjingqi.github.io https://unpkg.com; 
+      style-src 'self' 'unsafe-inline' https://unpkg.com; 
+      img-src 'self' https://emoji.bj.bcebos.com https://cdn.nlark.com/yuque/ data: asset:;
+      media-src 'self' electron:;
+      font-src 'self' https://unpkg.com;"
+    />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
