@@ -3,7 +3,7 @@
 Panda，是一款本地壁纸、音乐、文档的管理器，桌面Electron  + Vue3 + Nodejs
 
 ## Project 截图
-![应用截图](https://github.com/GHchenjingqi/panda/img.png)
+![应用截图](https://github.com/GHchenjingqi/panda/blob/main/img.png)
 
 ## Project Setup
 
