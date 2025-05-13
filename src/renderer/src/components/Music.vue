@@ -156,6 +156,7 @@
         if (!audio.paused) {
             audio.pause() 
             musicPlayIcon.value = playicon
+            musicState.value.play = false
             changeProgress(0)
         } 
 
