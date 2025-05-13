@@ -35,6 +35,7 @@ const props  = defineProps({
         margin-right: 2;
         font-size: 0.9rem;
         line-height: 1.8;
+        margin-bottom: 0.35rem;
     }
     li a{
         color: var(--textColor);

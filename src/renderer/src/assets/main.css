@@ -1,14 +1,14 @@
 @import './base.css';
 
 body{
-  border-radius: var(--radius);
-  overflow: hidden;
   font-size: 16px;
 }
 
 #app{
   background: var(--linegrad);
   border-radius: var(--radius);
+  border-radius: var(--radius);
+  overflow: hidden;
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-attachment: fixed;

@@ -17,6 +17,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 680,
+    title: "Panda",
     show: false,
     frame: false, 
     resizable: false,
