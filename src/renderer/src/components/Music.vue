@@ -3,19 +3,19 @@
         <img class="music-img " :class="{ 'rotate' : musicState.play }" :src="defimg" alt="">
         <div class="play-box">
             <div class="play-top">
-                <div class="title" @click="nextPlay">{{ musicState.name }}</div>
+                <div class="title" @click="nextPlay" title="下一首">{{ musicState.name }}</div>
                 <div class="play-btn">
                     <div class="item one" @click="changePlay">
-                        <img :src="musicPlayIcon"  alt="">
+                        <img :src="musicPlayIcon"  alt="播放/暂停" title="播放/暂停">
                     </div>
                     <div class="item">
-                        <img :src="RandomIcon" @click="changeRandomHandel()" alt="">
+                        <img :src="RandomIcon" @click="changeRandomHandel()" alt="随机播放" title="随机播放">
                     </div>
                     <div class="item"  @click="changeSigleHandel()" >
-                        <img :src="SigleIcon" alt="">
+                        <img :src="SigleIcon" alt="单曲循环" title="单曲循环">
                     </div>
                     <div class="item">
-                        <img :src="listicon" @click="getMusic" alt="">
+                        <img :src="listicon" @click="getMusic" alt="获取音乐" title="获取音乐">
                     </div>
                 </div>
             </div>
@@ -24,8 +24,10 @@
             </div>
         </div>
     </div>
+    <Notice v-if="msg" :message="msg" :type="infotype" />
 </template>
 <script setup>
+    import Notice from '@/components/Notice.vue';
     import defimg from '@/assets/images/music.jpg'
     import listicon from '@/assets/images/list.png'
     import playicon from '@/assets/images/play.png'
@@ -38,7 +40,16 @@
     import { inject } from 'vue'; 
     import audio from '@/utils/audio';
 
-
+    const msg = ref('')
+    const infotype = ref('')
+    const sendMSG = (newmsg, type = 'success') => {
+        msg.value = newmsg
+        infotype.value = type
+        setTimeout(() => {
+            msg.value = ''
+            infotype.value  = ''
+        }, 3500)
+    }
     // 注入批量提供的方法对象
     const { changeMusic } = inject('music');
     const musicState = ref({
@@ -84,16 +95,18 @@
 
     const setProgress = ()=>{ 
         if (timer)  clearInterval(timer)
-        timer = setInterval(()=>{
+        timer = setInterval( async ()=>{
             let prg = audio.getProgress()
             if  (Number(prg).toFixed(0) == 100) {
-                let title = audio.getTitle()
+                clearInterval(timer)
+                // 播放完成时获取下一首的标题
+                let title = await audio.getTitleAsync()
                 if(title){
                     musicState.value.name  = title
+                    // 刷新进度条
                     setProgress()
-                }
-                else{
-                    clearInterval(timer)
+                }else{
+                    musicState.value.name  = '播放结束'
                 }
             }else{
                 changeProgress(prg)
@@ -108,7 +121,7 @@
         setProgress()
     }
     const changePlay = ()=>{
-        if(audioSize >0 ){
+        if(audioSize > 0 ){
             musicState.value.play = !musicState.value.play
             changeMusicPlayIcon(musicState.value.play)
             changeMusic(musicState.value.play)
@@ -119,7 +132,7 @@
                 clearInterval(timer)
             }
         }else{
-            alert(`请设置音乐目录！`)
+            sendMSG('请设置音乐目录！', 'error')
         }
     }
  
@@ -140,18 +153,25 @@
     }
 
     const getMusic = async()=>{
+        if (!audio.paused) {
+            audio.pause() 
+            musicPlayIcon.value = playicon
+            changeProgress(0)
+        } 
+
         let res = await audio.getMusics()
         if  (res) { 
             if (res.length) {
-                alert(`成功获取到${res.length}首音乐！`)
-                audio.init()
+                sendMSG(`成功获取到${res.length}首音乐！`, 'success')
+                await audio.init()
                 let title = audio.getTitle()
-                debugger
                 if(title){
                     musicState.value.name  = title
                 }
             }else{
-                alert(`请设置音乐目录！`)
+                sendMSG('未获取到音频资源，请更改目录！', 'error')
+                musicState.value.name  = '暂无音乐'
+                audio.setSource('')
             }
         }
     }
@@ -179,20 +199,32 @@
         }else{
             changeRandom(0)
         }
-        let title = audio.getTitle()
+        let title = await audio.getTitle() || '暂无音乐'
         if(title){
-            musicState.value.name  = title
+            musicState.value.name  = title 
         }
+
         if(!isFirst){
             audio.pause()
             isFirst  = true
         }else{
-            let prgs = window.localStorage.getItem('progress') || 0
+            let prgs = audio.getProgress() || 0
             if (prgs != 0) {
                 setProgress()
             }
         }
     }
+
+    function canvasInit(){
+        canvas = document.getElementById('canvas');
+        ctx = canvas.getContext('2d');
+        // 设置 canvas 分辨率
+        canvas.width = canvas.clientWidth * dpr;
+        canvas.height = canvas.clientHeight * dpr;
+        ctx.scale(dpr, dpr);
+    }
+ 
+
     const bodyClick = ()=>{
         // 模拟点击，触发音频播放潜质
         let clickEvent = new MouseEvent('click', {
@@ -206,13 +238,13 @@
     onMounted(()=>{
         bodyClick()
         changeMusicPlayIcon(0)
+        SigleIcon.value =  sigleicon
+        RandomIcon.value =  randomicon
         setTimeout(()=>{
             init()
         }, 300)
     })
     onUnmounted(()=>{
-        let prg = audio.getProgress()
-        if(prg) window.localStorage.setItem('progress', prg)
         if(timer) clearInterval(timer)
     })
 </script>
@@ -222,6 +254,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    position: relative;
 }
 .title {
     font-size: 0.88rem;
@@ -261,7 +294,7 @@
 }
 .play-pregress {
     width: 290px;
-    height: 10px;
+    height: 6px;
     border-radius: 10px;
     position: relative;
     --wit:0%;
@@ -270,11 +303,11 @@
     content: '';
     display: block;
     position: absolute;
-    top: 0;
+    top: -1px;
     left: 0;
     border-radius: 10px;
     width: var(--wit);
-    height:10px;
+    height:7px;
     background: var(--mc);
 }
 

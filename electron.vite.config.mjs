@@ -1,4 +1,5 @@
 import { resolve } from 'path'
+import path from 'path';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
 

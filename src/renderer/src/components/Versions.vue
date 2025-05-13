@@ -17,8 +17,10 @@ const versions = reactive({ ...window.electron.process.versions })
     text-align: center;
     font-size: 12px;
     position: absolute;
-    bottom: 5px;
+    left: 0;
+    bottom: 0;
     opacity: 0.4;
+    background: linear-gradient(to bottom, rgba(211, 230, 255,0), rgba(255,255,255,0.5));
   }
   .versions span{
     margin: 0 10px;

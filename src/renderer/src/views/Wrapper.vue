@@ -68,10 +68,21 @@ const initLazyLoading = () => {
     });
 };
 
+const  getWrappers = async () => {
+   let wraps = window.localStorage.getItem('warppers') || null
+   if (!wraps) {
+        wraps = await api.invoke('get-imgs')
+        window.localStorage.setItem('warppers',JSON.stringify(wraps))
+   }else{
+        wraps = JSON.parse(wraps)
+   }
+   return wraps
+}
+
 onMounted(async () => {
     wrapPath.value = await api.storage.get('warpperPath') || null
     if (wrapPath.value) {
-        let list = await api.invoke('get-imgs')
+        let list = await getWrappers()
         imgList.value = list.map(item => {
             return {
                 src: item,
@@ -83,7 +94,6 @@ onMounted(async () => {
         },20)
     }
 })
-
 
 const setWin = (item) => {
     api.send('set-wallpaper', item.src)

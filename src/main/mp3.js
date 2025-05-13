@@ -9,8 +9,6 @@ const audioExtensions = ['.mp3', '.wav', '.flac', '.ogg', '.m4a'];
  * @returns {Array} 音乐文件路径列表
  */
 export async function scanMusic(dir) {
-  console.log("start:", dir);
-
   if (!fs.existsSync(dir)) {
       console.error('path is not exist:', dir);
       return [];
@@ -55,7 +53,7 @@ export async function scanMusic(dir) {
 
   _scan(dir); // 开始扫描
 
-  console.log("alls:", musicFiles.length);
+//   console.log("alls:", musicFiles.length);
   return musicFiles;
 }
 

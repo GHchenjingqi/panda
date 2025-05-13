@@ -39,7 +39,7 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import Weather from '@/components/Weather.vue'
 import AI from '@/components/AI.vue'
 import News from '@/components/News.vue'
@@ -54,14 +54,25 @@ const router = useRouter()
 const weather = ref({wt: '',})
 const knows = ref(0)
 const news = ref([])
+
+const getNewsHandle = async ()=>{
+    news.value = await api.invoke('get-news') 
+}
+let timer = null
 onMounted( async()=>{
     knows.value = pathList.length
     const { data } = await initWeather()
     weather.value = data
     weather.value.wt = weatherList[data.weather]
-    news.value = await api.invoke('get-news') 
+    getNewsHandle()
+    timer = setTimeout(()=>{
+        getNewsHandle()
+    },1000 * 60 * 5)
 })
 
+ onBeforeUnmount(()=>{
+    clearInterval(timer)
+ })
 const goyuque = ()=>{
     router.push('/nmd')
 }
@@ -82,6 +93,8 @@ const goyuque = ()=>{
     height: 100%;
     box-sizing: border-box;
     padding: 1rem;
+    position: relative;
+    overflow: hidden;
 }
 .mark{
     margin-top: -0.4rem;

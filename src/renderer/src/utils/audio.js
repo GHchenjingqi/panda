@@ -1,4 +1,8 @@
-let musicList = [], active , sigle , random ;
+let musicList = [], active , sigle , random;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 class AudioPlayer {
     constructor(src) {
       this.audio = new Audio();
@@ -10,15 +14,20 @@ class AudioPlayer {
         active = await api.storage.get('musicActive') || 1
         sigle = await api.storage.get('musicSingle') || false
         random = await api.storage.get('musicRandom') || false
-        let res =  await this.getMusics()
+        let res = await this.getMusics()
         if (res && res.length>0) {
             this.setNextSrc()
             this.getTitle()
+            this.setupListeners();
         }
     }
     async getMusics(){
        let src =  await api.storage.get('musicPath') || null
-       if(!src) return []
+       if(!src){
+            musicList = []
+            this.audio.src = ''
+            return []
+       } 
        musicList = await api.invoke('get-music',src)
        return musicList
     }
@@ -46,8 +55,13 @@ class AudioPlayer {
     getTitle(){
         if (!this.audio.src) return '暂无播放'
         let src = decodeURIComponent(this.audio.src)
-        const curlist = src.split('/')
-        return curlist[curlist.length-1].split('.')[0]
+        const filenameWithExtension = src.split('/').pop(); // 获取最后一段（含扩展名）
+        const title = filenameWithExtension.replace(/\.\w+$/, ''); // 去掉最后一个 .后缀
+        return title
+    }
+    async getTitleAsync(){
+        await sleep(100)
+        return this.getTitle()
     }
     getAudioStatus() {
         return {
@@ -133,6 +147,7 @@ class AudioPlayer {
     }
     // 监听播放事件
     async setupListeners() {
+        if (!this.audio.src) return
         let that = this;
         this.audio.addEventListener('play', () => console.log('Audio started playing'));
         this.audio.addEventListener('pause', () => console.log('Audio paused'));

@@ -4,7 +4,7 @@ import fs from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import {Storage ,setupStorageIPC} from './store'
+import { Storage ,setupStorageIPC } from './store'
 import { fetchBaiduHotSearch } from './news'
 import { scanMusic } from './mp3'
 import { readImagesFromDir } from './wrap'
@@ -25,7 +25,7 @@ function createWindow() {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
+      sandbox: false
     }
   })
   
@@ -121,10 +121,47 @@ function createWindow() {
   }
 }
 
+
+// 配置开机启动
+function setAutoLaunch(enabled) {
+  const appFolder = path.dirname(process.execPath)
+  const updateExe = path.resolve(appFolder, '..', 'Update.exe')
+  const exeName = path.basename(process.execPath)
+
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    openAsHidden: true, // macOS 可选：是否隐藏启动
+    path: process.platform === 'win32' ? updateExe : process.execPath,
+    args: [
+      '--processStart', `"${exeName}"`,
+      '--process-start-args', `"--hidden"`
+    ]
+  })
+}
+
 async function getImgList(){
     const wrapsrc = Storage.get('warpperPath')
     if (!wrapsrc) return []
     return await readImagesFromDir(wrapsrc)
+}
+
+
+// 图标路径处理函数
+function getIconPath() {
+  if (import.meta.env.DEV) { // Vite 开发环境
+    return path.join(process.cwd(), 'resources/', getPlatformIcon())
+  } else { // 生产环境
+    return path.join(process.resourcesPath, '', getPlatformIcon())
+  }
+}
+
+// 获取平台对应图标文件名
+function getPlatformIcon() {
+  switch (process.platform) {
+    case 'win32': return 'icon.ico'
+    case 'darwin': return 'icon.icns'
+    default: return 'icon.png' // Linux
+  }
 }
 
 app.whenReady().then(() => {
@@ -149,19 +186,20 @@ app.whenReady().then(() => {
         x,
         y,
         autoHideMenuBar: true,
+        // 动态加载图标（开发/生产环境兼容）
+        icon: getIconPath(),
         webPreferences: {
           preload: join(__dirname, '../preload/index.js'),
           sandbox: false
         }
       })
       const { routepath, md=null,title=null} = data
+
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
         let url = process.env['ELECTRON_RENDERER_URL']+`/#${routepath}`
         childWin.loadURL(url)
       } else {
-        childWin.loadFile(path.join(__dirname, '../renderer/index.html')).then(() => {
-          childWin.webContents.send('navigate-to-route', routepath);
-        });
+        childWin.loadFile(path.join(__dirname, `../renderer/index.html`), { hash: routepath })
       }
       // 发送参数给子窗口
       childWin.webContents.on('did-finish-load', () => {
@@ -235,7 +273,6 @@ app.whenReady().then(() => {
 
   // 获取md
   ipcMain.handle('get-md',async (event,data)=>{ 
-    console.log('get-md')
     try {
       const { filePaths } = await dialog.showOpenDialog({
         properties: ['openFile'],
@@ -254,6 +291,8 @@ app.whenReady().then(() => {
       throw err; 
     }
   })
+
+
   // 保存md文件
   ipcMain.handle('save-md',async (_,data) => {
     const { src,title, text} = data
@@ -269,6 +308,10 @@ app.whenReady().then(() => {
   });
 
 
+  // 示例：在某个 IPC 通信中调用
+  ipcMain.handle('set-auto-launch', (_, enabled) => {
+    setAutoLaunch(enabled)
+  })
   createWindow()
 
   app.on('activate', function () {

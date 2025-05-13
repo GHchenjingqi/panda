@@ -6,22 +6,26 @@
             <button class="choose" @click="handleDirectorySelect('music')">选择</button>
         </div>
         <div class="item">
-            <label for="musicPath">壁纸路径</label>
+            <label for="warpperPath">壁纸路径</label>
             <input type="text" v-model="form.warpperPath">
             <button class="choose" @click="handleDirectorySelect('warpper')">选择</button>
         </div>
         <div class="item">
-            <label for="musicPath">MD路径</label>
+            <label for="mdPath">MD路径</label>
             <input type="text" v-model="form.mdPath">
             <button class="choose" @click="handleDirectorySelect('md')">选择</button>
         </div>
         <div class="item">
-            <label for="musicPath">桌面壁纸</label>
+            <label for="windowBG">桌面壁纸</label>
             <input type="text" placeholder="前往壁纸中心设置" disabled v-model="form.windowBG">
         </div>
         <div class="item">
-            <label for="musicPath">应用主题</label>
+            <label for="appBG">应用主题</label>
             <input type="text"  placeholder="前往壁纸中心设置" disabled v-model="form.appBG">
+        </div>
+        <div class="item">
+            <label for="autoLaunch">开机自启</label>
+            <input type="checkbox" class="checkbox ao" v-model="form.autoLaunch">
         </div>
     </div>
     <div class="btn-group">
@@ -35,7 +39,7 @@ import Notice from '@/components/Notice.vue';
 import { ref, onMounted } from 'vue'
 import { configs } from '../../config';
 import { setAppBG } from '@/utils/comfun'
-const {musicPath, warpperPath, windowBG, appBG} = configs()
+const {musicPath, warpperPath, windowBG, appBG, mdPath, autoLaunch} = configs()
 
 const form = ref({
     musicPath: '',
@@ -43,6 +47,7 @@ const form = ref({
     windowBG: '',
     mdPath: '',
     appBG: '',
+    autoLaunch: false,
 })
 
 const msg = ref('')
@@ -74,12 +79,14 @@ const handleDirectorySelect = async (type) => {
 const save = async () => {
     const params = { ...form.value }
     await api.storage.setMultiple(params)
+    await api.invoke('set-auto-launch', form.value.autoLaunch)
+   
     sendMSG('保存成功', 'success')
 }
 const reset = async () => {
-    const res = await api.storage.clear()
-    await api.storage.setMultiple({ musicPath, warpperPath, windowBG, appBG})
-    form.value = { musicPath, warpperPath, windowBG, appBG}
+    await api.storage.clear()
+    await api.storage.setMultiple({ musicPath, warpperPath, windowBG, appBG, mdPath, autoLaunch})
+    form.value = { musicPath, warpperPath, windowBG, appBG,mdPath, autoLaunch}
     sendMSG('重置成功', 'success')
     setAppBG()
 }
@@ -100,12 +107,15 @@ onMounted(async () => {
 }
 .set .item{
     margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }
 .set .item label {
     width: 70px;
     display: inline-block;
 }
-.set input {
+.set input:not([type="checkbox"]) {
     margin-left: 1rem;
     width: 360px;
     padding: 0 .6rem;
@@ -117,6 +127,15 @@ onMounted(async () => {
 .set input:focus{
     outline: none;
     border-color:var(--mc);
+}
+
+.checkbox{
+    margin-left: 1rem;
+    width: 24px;
+    height:24px;
+    padding: 0 .6rem;
+    box-sizing: border-box;
+    border-radius: 8px;
 }
 .set .item button{
     margin-left: 1rem;

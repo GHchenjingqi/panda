@@ -14,6 +14,7 @@ export const configs = ()=>{
         // 桌面壁纸
         windowBG: '',
         // app壁纸
-        appBG: ''
+        appBG: '',
+        autoLaunch: false,
     }
 }

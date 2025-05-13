@@ -68,7 +68,8 @@ const oper = (type) => {
     .oper{
       padding-top: 10px;
       text-align: right;
-      margin-right: 0.5rem;
+      padding-right: 0.5rem;
+      background: linear-gradient(to bottom, rgba(211, 230, 255, 0.5), rgba(255,255,255,0));
     }
     .oper img{
       padding: 0.5rem;
