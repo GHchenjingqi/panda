@@ -223,12 +223,19 @@ onMounted(() => {
 }
 
 .sub-mulu {
+    display: none;
     width: 280px;
     padding: 2rem 1rem;
     box-sizing: border-box;
     border-radius: 8px;
     background: #f7fbff;
     margin-left: auto;
+}
+
+@media (min-width: 769px) {
+    .sub-mulu {
+        display: block;
+    }
 }
 
 .fixed-sidebar {
