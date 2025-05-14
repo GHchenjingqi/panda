@@ -1,13 +1,15 @@
 let musicList = [], active , sigle , random;
-
+let Listener = false
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 class AudioPlayer {
     constructor(src) {
       this.audio = new Audio();
-      if (src) this.setSource(src);
-      this.setupListeners();
+      if (src){
+        this.setSource(src);
+        this.setupListeners();
+      }
     }
 
     async init(){
@@ -147,6 +149,7 @@ class AudioPlayer {
     }
     // 监听播放事件
     async setupListeners() {
+        if (Listener) return
         if (!this.audio.src) return
         let that = this;
         this.audio.addEventListener('play', () => console.log('Audio started playing'));
@@ -156,6 +159,7 @@ class AudioPlayer {
             that.play();
         });
         this.audio.addEventListener('error', (e) => console.error('An error occurred:', e));
+        Listener = true
     }
   
     // 返回当前播放时间

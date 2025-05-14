@@ -24,6 +24,10 @@
             <input type="text"  placeholder="前往壁纸中心设置" disabled v-model="form.appBG">
         </div>
         <div class="item">
+            <label for="showMD">开启知识库</label>
+            <input type="checkbox" class="checkbox ao" v-model="form.showMD">
+        </div>
+        <div class="item">
             <label for="autoLaunch">开机自启</label>
             <input type="checkbox" class="checkbox ao" v-model="form.autoLaunch">
         </div>
@@ -39,7 +43,7 @@ import Notice from '@/components/Notice.vue';
 import { ref, onMounted } from 'vue'
 import { configs } from '../../config';
 import { setAppBG } from '@/utils/comfun'
-const {musicPath, warpperPath, windowBG, appBG, mdPath, autoLaunch} = configs()
+const settings = configs().settings
 
 const form = ref({
     musicPath: '',
@@ -48,6 +52,7 @@ const form = ref({
     mdPath: '',
     appBG: '',
     autoLaunch: false,
+    showMD: false
 })
 
 const msg = ref('')
@@ -77,16 +82,16 @@ const handleDirectorySelect = async (type) => {
     }
 }
 const save = async () => {
-    const params = { ...form.value }
-    await api.storage.setMultiple(params)
-    await api.invoke('set-auto-launch', form.value.autoLaunch)
-   
+    const {  musicPath, warpperPath,  windowBG, mdPath, appBG,  autoLaunch, showMD } = form.value
+    await api.storage.setMultiple({  musicPath, warpperPath,  windowBG, mdPath, appBG,  autoLaunch, showMD })
+    await api.invoke('set-auto-launch', autoLaunch )
+    await api.send('set-menu-md', showMD )
     sendMSG('保存成功', 'success')
 }
 const reset = async () => {
     await api.storage.clear()
-    await api.storage.setMultiple({ musicPath, warpperPath, windowBG, appBG, mdPath, autoLaunch})
-    form.value = { musicPath, warpperPath, windowBG, appBG,mdPath, autoLaunch}
+    await api.storage.setMultiple({ ...settings})
+    form.value = { ...settings}
     sendMSG('重置成功', 'success')
     setAppBG()
 }
@@ -100,7 +105,7 @@ onMounted(async () => {
 </script>
 <style scoped>
 .set {
-    padding: 2rem 1rem 1rem;
+    padding: 2rem;
     box-sizing: border-box;
     border-radius: var(--radius);
     min-height: 30vh;
@@ -112,7 +117,7 @@ onMounted(async () => {
     align-items: center;
 }
 .set .item label {
-    width: 70px;
+    width: 80px;
     display: inline-block;
 }
 .set input:not([type="checkbox"]) {

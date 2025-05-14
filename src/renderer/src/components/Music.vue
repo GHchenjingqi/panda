@@ -1,17 +1,17 @@
 <template>
     <div class="music">
-        <img class="music-img " :class="{ 'rotate' : musicState.play }" :src="defimg" alt="">
+        <img class="music-img " :class="{ 'rotate': musicState.play }" :src="defimg" alt="">
         <div class="play-box">
             <div class="play-top">
                 <div class="title" @click="nextPlay" title="下一首">{{ musicState.name }}</div>
                 <div class="play-btn">
                     <div class="item one" @click="changePlay">
-                        <img :src="musicPlayIcon"  alt="播放/暂停" title="播放/暂停">
+                        <img :src="musicPlayIcon" alt="播放/暂停" title="播放/暂停">
                     </div>
                     <div class="item">
                         <img :src="RandomIcon" @click="changeRandomHandel()" alt="随机播放" title="随机播放">
                     </div>
-                    <div class="item"  @click="changeSigleHandel()" >
+                    <div class="item" @click="changeSigleHandel()">
                         <img :src="SigleIcon" alt="单曲循环" title="单曲循环">
                     </div>
                     <div class="item">
@@ -27,236 +27,260 @@
     <Notice v-if="msg" :message="msg" :type="infotype" />
 </template>
 <script setup>
-    import Notice from '@/components/Notice.vue';
-    import defimg from '@/assets/images/music.jpg'
-    import listicon from '@/assets/images/list.png'
-    import playicon from '@/assets/images/play.png'
-    import stopicon from '@/assets/images/stop.png'
-    import randomicons from '@/assets/images/random.png'
-    import sigleicon from '@/assets/images/sigle.png'
-    import randomicon from '@/assets/images/random_s.png'
-    import sigleicons from '@/assets/images/sigle_s.png'
-    import { ref, onMounted, onUnmounted } from 'vue'
-    import { inject } from 'vue'; 
-    import audio from '@/utils/audio';
+import Notice from '@/components/Notice.vue';
+import defimg from '@/assets/images/music.jpg'
+import listicon from '@/assets/images/list.png'
+import playicon from '@/assets/images/play.png'
+import stopicon from '@/assets/images/stop.png'
+import randomicons from '@/assets/images/random.png'
+import sigleicon from '@/assets/images/sigle.png'
+import randomicon from '@/assets/images/random_s.png'
+import sigleicons from '@/assets/images/sigle_s.png'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { inject } from 'vue';
+import audio from '@/utils/audio';
 
-    const msg = ref('')
-    const infotype = ref('')
-    const sendMSG = (newmsg, type = 'success') => {
-        msg.value = newmsg
-        infotype.value = type
-        setTimeout(() => {
-            msg.value = ''
-            infotype.value  = ''
-        }, 3500)
-    }
-    // 注入批量提供的方法对象
-    const { changeMusic } = inject('music');
-    const musicState = ref({
-        play: false,
-        random: false,
-        sigle: false,
-        auto:true,
-        name: '',
-        progress: 0,
-    }) 
+const msg = ref('')
+const infotype = ref('')
+const sendMSG = (newmsg, type = 'success') => {
+    msg.value = newmsg
+    infotype.value = type
+    setTimeout(() => {
+        msg.value = ''
+        infotype.value = ''
+    }, 3500)
+}
+// 注入批量提供的方法对象
+const { changeMusic } = inject('music');
+const musicState = ref({
+    play: false,
+    random: false,
+    sigle: false,
+    auto: true,
+    name: '',
+    progress: 0,
+})
 
-    const musicPlayIcon = ref('')
-    const changeMusicPlayIcon = (type)=>{
-        // 1 开始播放 0 暂停播放
-        musicPlayIcon.value = type == 1 ? stopicon : playicon
+const musicPlayIcon = ref('')
+const changeMusicPlayIcon = (type) => {
+    // 1 开始播放 0 暂停播放
+    musicPlayIcon.value = type == 1 ? stopicon : playicon
+}
+const SigleIcon = ref('')
+const changeSigle = (type) => {
+    // 1 单曲循环 0 列表循环
+    SigleIcon.value = type == 1 ? sigleicons : sigleicon
+    if (type == 1) {
+        // 单曲循环
+        audio.setSigleToggle(true)
+    } else {
+        // 列表循环
+        audio.setSigleToggle(false)
     }
-    const SigleIcon = ref('')
-    const changeSigle = (type)=>{
-        // 1 单曲循环 0 列表循环
-        SigleIcon.value = type == 1 ? sigleicons : sigleicon
-        if(type == 1){
-            // 单曲循环
-            audio.setSigleToggle(true)
-        }else{
-            // 列表循环
-            audio.setSigleToggle(false)
-        }
+}
+const RandomIcon = ref('')
+const changeRandom = (type) => {
+    // 1 随机播放 0 顺序播放
+    RandomIcon.value = type == 1 ? randomicons : randomicon
+    if (type == 1) {
+        // 随机播放
+        audio.setRandomToggle(true)
+    } else {
+        // 顺序播放
+        audio.setRandomToggle(false)
     }
-    const RandomIcon = ref('')
-    const changeRandom = (type)=>{
-        // 1 随机播放 0 顺序播放
-        RandomIcon.value = type == 1 ? randomicons : randomicon
-        if(type == 1){
-            // 随机播放
-            audio.setRandomToggle(true)
-        }else{
-            // 顺序播放
-            audio.setRandomToggle(false)
-        }
-    }
+}
 
-    let timer = null
+let timer = null
 
-    const setProgress = ()=>{ 
-        if (timer)  clearInterval(timer)
-        timer = setInterval( async ()=>{
-            let prg = audio.getProgress()
-            if  (Number(prg).toFixed(0) == 100) {
-                clearInterval(timer)
-                // 播放完成时获取下一首的标题
-                let title = await audio.getTitleAsync()
-                if(title){
-                    musicState.value.name  = title
-                    // 刷新进度条
-                    setProgress()
-                }else{
-                    musicState.value.name  = '播放结束'
-                }
-            }else{
-                changeProgress(prg)
+const setProgress = () => {
+    if (timer) clearInterval(timer)
+    timer = setInterval(async () => {
+        let prg = audio.getProgress()
+        if (Number(prg).toFixed(0) == 100) {
+            clearInterval(timer)
+            // 播放完成时获取下一首的标题
+            let title = await audio.getTitleAsync()
+            if (title) {
+                musicState.value.name = title
+                // 刷新进度条
+                setProgress()
+            } else {
+                musicState.value.name = '播放结束'
             }
-        },50)
+        } else {
+            changeProgress(prg)
+        }
+    }, 50)
+}
+const nextPlay = () => {
+    audio.pause()
+    audio.setNextSrc()
+    audio.play()
+    musicState.value.name = audio.getTitle()
+    setProgress()
+}
+const changePlay = () => {
+    if (audio && musicState.value.name  &&  audioSize > 0) {
+        musicState.value.play = !musicState.value.play
+        changeMusicPlayIcon(musicState.value.play)
+        changeMusic(musicState.value.play)
+
+        if (musicState.value.play) {
+            setProgress()
+        } else {
+            clearInterval(timer)
+        }
+    } else {
+        sendMSG('请设置音乐目录！', 'error')
     }
-    const nextPlay =  ()=>{ 
+}
+
+const changeSigleHandel = () => {
+    musicState.value.sigle = !musicState.value.sigle
+    changeSigle(musicState.value.sigle)
+}
+
+const changeRandomHandel = () => {
+    musicState.value.random = !musicState.value.random
+    changeRandom(musicState.value.random)
+}
+const changeProgress = (val) => {
+    let prg = document.getElementById('progress')
+    if (prg) {
+        prg.style.setProperty('--wit', val + '%')
+    }
+}
+
+const getMusic = async () => {
+    if (!audio.paused) {
         audio.pause()
-        audio.setNextSrc()
-        audio.play()
-        musicState.value.name = audio.getTitle()
-        setProgress()
+        musicPlayIcon.value = playicon
+        musicState.value.play = false
+        changeProgress(0)
     }
-    const changePlay = ()=>{
-        if(audioSize > 0 ){
-            musicState.value.play = !musicState.value.play
-            changeMusicPlayIcon(musicState.value.play)
-            changeMusic(musicState.value.play)
 
-            if (musicState.value.play) {
-                setProgress()
-            }else{
-                clearInterval(timer)
+    let res = await audio.getMusics()
+    if (res) {
+        if (res.length) {
+            sendMSG(`成功获取到${res.length}首音乐！`, 'success')
+            await audio.init()
+            let title = audio.getTitle()
+            if (title) {
+                musicState.value.name = title
             }
-        }else{
-            sendMSG('请设置音乐目录！', 'error')
-        }
-    }
- 
-    const changeSigleHandel = ()=>{
-        musicState.value.sigle = !musicState.value.sigle
-        changeSigle(musicState.value.sigle)
-    }
 
-    const changeRandomHandel = ()=>{
-        musicState.value.random = !musicState.value.random
-        changeRandom(musicState.value.random)
-    }
-    const changeProgress = (val)=>{ 
-        let prg = document.getElementById('progress')
-        if (prg) {
-            prg.style.setProperty('--wit', val + '%')
-        }
-    }
-
-    const getMusic = async()=>{
-        if (!audio.paused) {
-            audio.pause() 
-            musicPlayIcon.value = playicon
-            musicState.value.play = false
-            changeProgress(0)
-        } 
-
-        let res = await audio.getMusics()
-        if  (res) { 
-            if (res.length) {
-                sendMSG(`成功获取到${res.length}首音乐！`, 'success')
-                await audio.init()
-                let title = audio.getTitle()
-                if(title){
-                    musicState.value.name  = title
-                }
-            }else{
-                sendMSG('未获取到音频资源，请更改目录！', 'error')
-                musicState.value.name  = '暂无音乐'
-                audio.setSource('')
+            if (audio && title) {
+                setupSpaceListener(changePlay)
             }
+        } else {
+            sendMSG('未获取到音频资源，请更改目录！', 'error')
+            musicState.value.name = '暂无音乐'
+            audio.setSource('')
         }
     }
-    let audioSize = 0
-    const init = async ()=>{ 
-        let res  = await audio.getMusics()
-        audioSize = res.length
-        res = audio.getAudioStatus()
-        if (res) {
-            musicState.value = res
-            if (res.play) {
-                changeMusicPlayIcon(1)
+}
+let audioSize = 0
+const init = async () => {
+    let res = await audio.getMusics()
+    audioSize = res.length
+    res = audio.getAudioStatus()
+    if (res) {
+        musicState.value = res
+        if (res.play) {
+            changeMusicPlayIcon(1)
+        }
+    }
+    let sigle = await audio.getSigle() || false
+    if (sigle) {
+        changeSigle(1)
+    } else {
+        changeSigle(0)
+    }
+
+    let random = await audio.getRandom() || false
+    if (random) {
+        changeRandom(1)
+    } else {
+        changeRandom(0)
+    }
+    let title = await audio.getTitle() || '暂无音乐'
+    if (title) {
+        musicState.value.name = title
+    }
+
+    if (!isFirst) {
+        audio.pause()
+        isFirst = true
+    } else {
+        let prgs = audio.getProgress() || 0
+        if (prgs != 0) {
+            setProgress()
+        }
+    }
+    if (audio && title) {
+        setupSpaceListener(changePlay)
+    }
+}
+
+// 监听事件仅注册一次
+let _listenerSetup = false
+const setupSpaceListener = (callback, delay = 300) => {
+    if (_listenerSetup) return
+    let timeoutId;
+
+    document.addEventListener('keydown', (event) => {
+        if (event.code === 'Space') {
+            // 阻止默认行为（可选）
+            event.preventDefault();
+
+            // 清除之前的定时器
+            if (timeoutId) {
+                clearTimeout(timeoutId);
             }
-        }
-        let sigle = await audio.getSigle() || false
-        if (sigle) {
-            changeSigle(1)
-        }else{
-            changeSigle(0)
-        }
 
-        let random = await audio.getRandom() || false
-        if (random) {
-            changeRandom(1)
-        }else{
-            changeRandom(0)
+            // 设置新的定时器
+            timeoutId = setTimeout(() => {
+                callback();
+                timeoutId = null; // 可选：重置 timeoutId
+            }, delay);
         }
-        let title = await audio.getTitle() || '暂无音乐'
-        if(title){
-            musicState.value.name  = title 
-        }
+    });
+    _listenerSetup = true
+};
 
-        if(!isFirst){
-            audio.pause()
-            isFirst  = true
-        }else{
-            let prgs = audio.getProgress() || 0
-            if (prgs != 0) {
-                setProgress()
-            }
-        }
-    }
+const bodyClick = () => {
+    // 模拟点击，触发音频播放潜质
+    let clickEvent = new MouseEvent('click', {
+        bubbles: true,    // 事件是否会在DOM树中冒泡
+        cancelable: true, // 事件是否可以被取消默认动作
+        view: window      // 指定事件的 AbstractView (document.defaultView 对应于 window)
+    });
 
-    function canvasInit(){
-        canvas = document.getElementById('canvas');
-        ctx = canvas.getContext('2d');
-        // 设置 canvas 分辨率
-        canvas.width = canvas.clientWidth * dpr;
-        canvas.height = canvas.clientHeight * dpr;
-        ctx.scale(dpr, dpr);
-    }
- 
-
-    const bodyClick = ()=>{
-        // 模拟点击，触发音频播放潜质
-        let clickEvent = new MouseEvent('click', {
-            bubbles: true,    // 事件是否会在DOM树中冒泡
-            cancelable: true, // 事件是否可以被取消默认动作
-            view: window      // 指定事件的 AbstractView (document.defaultView 对应于 window)
-        });
-       
-        document.body.dispatchEvent(clickEvent);
-    }
-    onMounted(()=>{
-        bodyClick()
-        changeMusicPlayIcon(0)
-        SigleIcon.value =  sigleicon
-        RandomIcon.value =  randomicon
-        setTimeout(()=>{
-            init()
-        }, 300)
-    })
-    onUnmounted(()=>{
-        if(timer) clearInterval(timer)
-    })
+    document.body.dispatchEvent(clickEvent);
+}
+onMounted(() => {
+    bodyClick()
+    changeMusicPlayIcon(0)
+    SigleIcon.value = sigleicon
+    RandomIcon.value = randomicon
+    setTimeout(() => {
+        init()
+    }, 300)
+})
+onUnmounted(() => {
+    if (timer) clearInterval(timer)
+})
 </script>
 <style scoped>
-.music{
+.music {
     height: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: center;
     position: relative;
 }
+
 .title {
     font-size: 0.88rem;
     line-height: 1.8;
@@ -265,7 +289,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.music-img{
+
+.music-img {
     width: 70px;
     height: 70px;
     border-radius: 100px;
@@ -273,34 +298,40 @@
     margin-right: 20px;
     border: 10px solid #333;
 }
-.play-top{
+
+.play-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.4rem;
 }
-.play-btn{
+
+.play-btn {
     width: 155px;
     display: inline-flex;
     justify-content: flex-start;
     align-items: center;
 }
-.play-btn .item{
+
+.play-btn .item {
     margin-left: .88rem;
     cursor: pointer;
 }
-.one img{
+
+.one img {
     width: 40px;
     height: 40px;
 }
+
 .play-pregress {
     width: 290px;
     height: 6px;
     border-radius: 10px;
     position: relative;
-    --wit:0%;
+    --wit: 0%;
 }
-.play-pregress::before{
+
+.play-pregress::before {
     content: '';
     display: block;
     position: absolute;
@@ -308,21 +339,23 @@
     left: 0;
     border-radius: 10px;
     width: var(--wit);
-    height:7px;
+    height: 7px;
     background: var(--mc);
 }
 
-.rotate{
+.rotate {
     transform-origin: center center;
-  
+
     /* 动画名称、持续时间、计时函数以及是否循环 */
     animation: rotate360 8s linear infinite;
 }
-@keyframes rotate360{
-    from{
+
+@keyframes rotate360 {
+    from {
         transform: rotate(0deg);
     }
-    to{
+
+    to {
         transform: rotate(360deg);
     }
 }

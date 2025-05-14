@@ -1,17 +1,18 @@
-import { app, shell, BrowserWindow, ipcMain,screen,dialog ,protocol } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, screen, dialog, protocol,Tray, Menu } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { Storage ,setupStorageIPC } from './store'
+import { Storage, setupStorageIPC } from './store'
 import { fetchBaiduHotSearch } from './news'
 import { scanMusic } from './mp3'
 import { readImagesFromDir } from './wrap'
 import wallpaper from 'wallpaper';
 import mime from 'mime-types';
+import AutoLaunch from 'auto-launch';
 
-let mainWindow = null, childWin = null
+let mainWindow = null, childWin = null,  tray = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -19,7 +20,7 @@ function createWindow() {
     height: 680,
     title: "Panda",
     show: false,
-    frame: false, 
+    frame: false,
     resizable: false,
     transparent: true,
     autoHideMenuBar: true,
@@ -29,7 +30,7 @@ function createWindow() {
       sandbox: false
     }
   })
-  
+
   protocol.registerFileProtocol('electron', (request, callback) => {
     // 1. 移除协议头
     let rawPath = request.url.replace(/^electron:\/\//, '')
@@ -42,7 +43,7 @@ function createWindow() {
     try {
       const fullPath = path.resolve(urlPath);
       const mimeType = mime.lookup(fullPath) || 'application/octet-stream';
-      
+
       // 处理Range请求头
       const rangeHeader = request.headers.Range || request.headers.range;
       if (rangeHeader) {
@@ -51,16 +52,16 @@ function createWindow() {
         const range = rangeHeader.match(/bytes=(\d+)-(\d*)/);
         const start = parseInt(range[1], 10);
         const end = range[2] ? parseInt(range[2], 10) : totalSize - 1;
-        
+
         // 确保范围有效
         if (start >= totalSize || end >= totalSize) {
-          callback({ 
+          callback({
             statusCode: 416, // Range Not Satisfiable
             headers: { 'Content-Range': `bytes */${totalSize}` }
           });
           return;
         }
-        
+
         // 返回206 Partial Content
         callback({
           statusCode: 206,
@@ -76,7 +77,7 @@ function createWindow() {
         });
       } else {
         // 普通请求返回整个文件
-        callback({ 
+        callback({
           path: fullPath,
           headers: { 'Content-Type': mimeType }
         });
@@ -108,8 +109,8 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', async () => {
     mainWindow.show()
-  }) 
-  //
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -125,25 +126,28 @@ function createWindow() {
 
 // 配置开机启动
 function setAutoLaunch(enabled) {
-  const appFolder = path.dirname(process.execPath)
-  const updateExe = path.resolve(appFolder, '..', 'Update.exe')
-  const exeName = path.basename(process.execPath)
+  const autoLauncher = new AutoLaunch({
+    name: 'panda-app', // 必须与你的应用名称一致
+    path: app.getPath('exe'), // 自动获取应用路径
+    isHidden: true // 是否隐藏启动窗口（仅macOS有效）
+  });
 
-  app.setLoginItemSettings({
-    openAtLogin: enabled,
-    openAsHidden: true, // macOS 可选：是否隐藏启动
-    path: process.platform === 'win32' ? updateExe : process.execPath,
-    args: [
-      '--processStart', `"${exeName}"`,
-      '--process-start-args', `"--hidden"`
-    ]
-  })
+  // 检查是否已启用自启
+  autoLauncher.isEnabled().then(enabled => console.log('AutoLaunch Enabled:', enabled)).catch(err => console.error(err));
+
+  if (enabled) {
+    // 禁用自启
+    autoLauncher.enable();
+  } else {
+    // 启用自启
+    autoLauncher.disable();
+  }
 }
 
-async function getImgList(){
-    const wrapsrc = Storage.get('warpperPath')
-    if (!wrapsrc) return []
-    return await readImagesFromDir(wrapsrc)
+async function getImgList() {
+  const wrapsrc = Storage.get('warpperPath')
+  if (!wrapsrc) return []
+  return await readImagesFromDir(wrapsrc)
 }
 
 
@@ -175,7 +179,7 @@ app.whenReady().then(() => {
   setupStorageIPC()
 
   // 创建子窗口
-  ipcMain.on('creatChildWinow', (_,data) => {
+  ipcMain.on('creatChildWinow', (_, data) => {
     if (!childWin || childWin.isDestroyed()) {
       const primaryDisplay = screen.getPrimaryDisplay()
       const { width, height } = primaryDisplay.workAreaSize
@@ -183,7 +187,7 @@ app.whenReady().then(() => {
       let y = (height - 680) / 2
       let childWin = new BrowserWindow({
         width: 400,
-        height: 680 ,
+        height: 680,
         x,
         y,
         autoHideMenuBar: true,
@@ -194,10 +198,10 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
-      const { routepath, md=null,title=null} = data
+      const { routepath, md = null, title = null } = data
 
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        let url = process.env['ELECTRON_RENDERER_URL']+`/#${routepath}`
+        let url = process.env['ELECTRON_RENDERER_URL'] + `/#${routepath}`
         childWin.loadURL(url)
       } else {
         childWin.loadFile(path.join(__dirname, `../renderer/index.html`), { hash: routepath })
@@ -205,7 +209,7 @@ app.whenReady().then(() => {
       // 发送参数给子窗口
       childWin.webContents.on('did-finish-load', () => {
         childWin.setTitle(title)
-        childWin.webContents.send('send-params-to-child', {title, md});
+        childWin.webContents.send('send-params-to-child', { title, md });
       });
       childWin.on('closed', () => {
         childWin = null;
@@ -213,40 +217,45 @@ app.whenReady().then(() => {
     }
   })
 
+  // 渲染进程页面1 => 设置菜单动态隐藏 => 父窗口传递至渲染进程页面2
+  ipcMain.on('set-menu-md', async (_, flag) => {
+    mainWindow.webContents.send('set-menu-flag', flag)
+  });
   // 获取图片列表
-  ipcMain.handle('get-imgs',async (event,data)=>{ 
+  ipcMain.handle('get-imgs', async (event, data) => {
     return await getImgList()
   })
-  ipcMain.handle('send-path-file',async (event,data)=>{
-    let result = await dialog.showOpenDialog(mainWindow, {  properties: ['openDirectory'], })
-    if(result){
+  ipcMain.handle('send-path-file', async (event, data) => {
+    let result = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'], })
+    if (result) {
       if (!result.canceled && result.filePaths.length > 0) {
         return result.filePaths[0]
       }
-    }else{
+    } else {
       return null
     }
   })
   // 窗口操作
-  ipcMain.handle('oper', (event,type) => {
-      if(type=='min'){
-        mainWindow.minimize()
-      }
-      if(type=='close'){
-        // 窗口关闭
-        mainWindow.close()
-        if (BrowserWindow.getAllWindows().length === 0)  app.quit()
-      }
+  ipcMain.handle('oper', (event, type) => {
+    if (type == 'min') {
+      mainWindow.minimize()
+    }
+    if (type == 'close') {
+      // 窗口关闭
+      // mainWindow.close()
+      // if (BrowserWindow.getAllWindows().length === 0) app.quit()
+      mainWindow.hide();
+    }
   });
   // 窗口移动
-  ipcMain.handle('move', (event,data) => {
+  ipcMain.handle('move', (event, data) => {
     const win = BrowserWindow.getFocusedWindow()
     if (!win) return
-  
+
     // 添加边界检查，遇到边界不再移动
     const { width, height } = win.getBounds()
     const { workArea } = screen.getPrimaryDisplay()
-  
+
     const safeX = Math.max(0, Math.min(data.appX, workArea.width - width))
     const safeY = Math.max(0, Math.min(data.appY, workArea.height - height))
     // 设置活动窗口位置
@@ -254,7 +263,7 @@ app.whenReady().then(() => {
   });
 
   // 设置桌面壁纸
-  ipcMain.on('set-wallpaper',async (_,src) => {
+  ipcMain.on('set-wallpaper', async (_, src) => {
     if (!src) return
     // 设置桌面壁纸
     let paths = src.replace(/\\/g, '\\\\')
@@ -262,24 +271,24 @@ app.whenReady().then(() => {
   });
 
   // 获取新闻
-  ipcMain.handle('get-news',async (event,data)=>{ 
+  ipcMain.handle('get-news', async (event, data) => {
     return await fetchBaiduHotSearch()
   })
 
   // 获取本地音乐
-  ipcMain.handle('get-music',async (event,src)=>{ 
+  ipcMain.handle('get-music', async (event, src) => {
     if (!src) return
     return await scanMusic(src)
   })
 
   // 获取md
-  ipcMain.handle('get-md',async (event,data)=>{ 
+  ipcMain.handle('get-md', async (event, data) => {
     try {
       const { filePaths } = await dialog.showOpenDialog({
         properties: ['openFile'],
         filters: [{ name: 'Markdown', extensions: ['md'] }]
       });
-  
+
       if (filePaths.length > 0) {
         const content = fs.readFileSync(filePaths[0], 'utf-8');
         return {
@@ -289,14 +298,13 @@ app.whenReady().then(() => {
       }
       return null;
     } catch (err) {
-      throw err; 
+      throw err;
     }
   })
 
-
   // 保存md文件
-  ipcMain.handle('save-md',async (_,data) => {
-    const { src,title, text} = data
+  ipcMain.handle('save-md', async (_, data) => {
+    const { src, title, text } = data
 
     const filePath = path.join(src, title);
     // 将文本内容写入文件
@@ -308,13 +316,24 @@ app.whenReady().then(() => {
     });
   });
 
-
   // 示例：在某个 IPC 通信中调用
   ipcMain.handle('set-auto-launch', (_, enabled) => {
     setAutoLaunch(enabled)
   })
-  createWindow()
 
+  // 创建托盘图标
+  tray = new Tray(icon);
+  const contextMenu = Menu.buildFromTemplate([
+    { label: '显示窗口', click: () => mainWindow.show() },
+    { label: '退出', click: () => app.quit() }
+  ]);
+  tray.setToolTip('我的应用');
+  tray.setContextMenu(contextMenu);
+
+  // 监听托盘图标点击
+  tray.on('click', () => mainWindow.show());
+
+  createWindow()
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })

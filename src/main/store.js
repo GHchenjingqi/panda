@@ -148,22 +148,12 @@ export function setupStorageIPC() {
 // 初始化本地配置
 function configInit() {
     const config = configs();
-    const { musicPath, warpperPath, windowBG, appBG} = config
-    if(!Storage.get('musicPath')) {
-        Storage.set('musicPath', musicPath)
-    }
-    if(!Storage.get('warpperPath')) {
-        Storage.set('warpperPath', warpperPath)
-    }
-    if(!Storage.get('windowBG')) {
-        Storage.set('windowBG', windowBG)
-    }
-    if(!Storage.get('mdPath')) {
-      Storage.set('mdPath', windowBG)
-  }
-    if(!Storage.get('appBG')) {
-        Storage.set('appBG', appBG)
-    }
+    let keys = Object.entries(config.settings)
+    keys.forEach(([key, value]) => {
+      if (!Storage.get(key)) { 
+        Storage.set(key, value);
+      }
+    });
 }
 configInit()
 

@@ -29,7 +29,7 @@ onMounted(()=>{
 <style scoped>
 .notice {
   position: fixed;
-  top: 80px;
+  top: 30px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;

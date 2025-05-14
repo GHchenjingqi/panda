@@ -7,11 +7,12 @@
             </form>
 
             <div class="tu list">
-                <ul>
-                    <li v-for="item in menus" :key="item.path" :title="item.name" @click="openFile(item.path, item.name)">
-                        {{ item.name }}
+                <ul v-if="menus.length > 0">
+                    <li v-for="(item,index) in menus" :key="item.path" :title="item.name" @click="openFile(item.path, item.name)">
+                       {{ index + 1 }}.{{ item.name }}
                     </li>
                 </ul>
+                <p class="no-data" v-else>暂无匹配数据，请新增！</p>
             </div>
        </div>
     </div>
@@ -20,7 +21,7 @@
 import { configs } from '@renderer/config.js';
 import { pathList  } from 'https://ghchenjingqi.github.io/home/public/pathList.js'
 import { ref , onMounted} from 'vue';
-const {base, knowledge} = configs();
+const { base, knowledge } = configs();
 const knowFiles = base + knowledge.mds
 
 const menus = ref([]), menusList = ref([])
@@ -95,7 +96,7 @@ onMounted(()=>{
         color: var(--mc);
     }
     .list{
-        padding: 1rem;
+        padding: 2rem;
         box-sizing: border-box;
         height: auto;
         border-radius: var(--radius);
@@ -118,5 +119,13 @@ onMounted(()=>{
     }
     .list li:nth-of-type(3n){
         margin-right: 0;
+    }
+    .list li:hover{
+        color: var(--mc);
+        text-decoration: underline;
+    }
+    .no-data{
+        text-align: center;
+        padding: 3rem 1rem;
     }
 </style>

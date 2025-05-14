@@ -18,10 +18,10 @@
     </div>
   </template>
   <script setup>
-    import { reactive ,ref} from 'vue'
+    import { ref, onMounted } from 'vue'
     import { useRoute } from 'vue-router';
     import { routes } from '@/router'
-
+    import { configs } from '@renderer/config.js';
     import homeIcon from '@/assets/images/home.png';
     import bizhiIcon from '@/assets/images/bizhi.png';
     import homeIconAct from '@/assets/images/home_s.png';
@@ -33,7 +33,7 @@
     const isActive = (path) => {
         return route.path === path;
     }
-    const menus = reactive(routes)
+    const menus = ref([])
     const imageMap = {
         home: homeIcon,
         homes: homeIconAct,
@@ -49,6 +49,22 @@
         }
         return imageMap[icon] || '';
     };
+
+    const initMenus = async(showMD)=>{
+      if(!showMD){
+        menus.value = routes.filter(item => item.name != '知识库' )
+      }else{
+        menus.value = routes
+      }
+    }
+    onMounted( async()=>{
+      let status = await api.storage.get('showMD') ||  configs().settings.showMD
+      initMenus(status)
+      window.api.on("set-menu-flag" ,async (_, flag) => {
+        status = flag
+        initMenus(status)
+      })
+    })
   </script>
   <style scoped>
       .menus{

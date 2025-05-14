@@ -18,15 +18,16 @@
     "build:linux": "npm run build && electron-builder --linux"
   },
   "build": {
-    "nsis":{  
-      "oneClick": false, 
-      "perMachine": true, 
-      "allowToChangeInstallationDirectory": true 
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true
     }
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
+    "auto-launch": "^5.0.6",
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
     "electron-updater": "^6.3.9",

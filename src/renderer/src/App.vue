@@ -7,7 +7,7 @@
   import { provide } from 'vue';
   import audio from './utils/audio';
   const route = useRoute()
-  const allScreens = configs().allscreenPath
+  const allScreens = configs().settings.allscreenPath
   const isScreenFlag = ref(false)
 
   const getScreenFlag = ()=>{
