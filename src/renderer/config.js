@@ -6,6 +6,7 @@ export const configs = ()=>{
         },
         settings:{
             showMD: false,
+            remoteMd:'https://ghchenjingqi.github.io/home/public/pathList.js',
             allscreenPath: ['/md'],
             // 本地音乐路径
             musicPath: '',

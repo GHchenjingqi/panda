@@ -27,6 +27,11 @@
             <label for="showMD">开启知识库</label>
             <input type="checkbox" class="checkbox ao" v-model="form.showMD">
         </div>
+        <div class="item" v-if="form.showMD">
+            <label for="mdPath">知识库地址</label>
+            <input type="text" v-model="form.remoteMd">
+            <button class="choose" @click="handleDirectorySelect('rmd')">选择</button>
+        </div>
         <div class="item">
             <label for="autoLaunch">开机自启</label>
             <input type="checkbox" class="checkbox ao" v-model="form.autoLaunch">
@@ -51,6 +56,7 @@ const form = ref({
     windowBG: '',
     mdPath: '',
     appBG: '',
+    remoteMd:'',
     autoLaunch: false,
     showMD: false
 })
@@ -80,10 +86,13 @@ const handleDirectorySelect = async (type) => {
     if (type === 'md') {
         form.value.mdPath = res
     }
+    if (type === 'rmd') {
+        form.value.remoteMd = res
+    }
 }
 const save = async () => {
-    const {  musicPath, warpperPath,  windowBG, mdPath, appBG,  autoLaunch, showMD } = form.value
-    await api.storage.setMultiple({  musicPath, warpperPath,  windowBG, mdPath, appBG,  autoLaunch, showMD })
+    const {  musicPath, warpperPath,  windowBG, mdPath, appBG,  autoLaunch, showMD ,remoteMd} = form.value
+    await api.storage.setMultiple({  musicPath, warpperPath,  windowBG, mdPath, appBG,  autoLaunch, showMD, remoteMd })
     await api.invoke('set-auto-launch', autoLaunch )
     await api.send('set-menu-md', showMD )
     sendMSG('保存成功', 'success')

@@ -122,13 +122,19 @@ const copycreate = (blocks) => {
         }, 1800);
     });
 }
-onMounted(() => {
+onMounted( async() => {
+    let localPath = await api.storage.get('remoteMd') || ''
     window.api.getChildParams(async (data) => {
         const { title, md } = data
         titles.value = title
-        const response = await fetch(md);
-        const markdownText = await response.text();
-        compiledMarkdown.value = marked(markdownText);
+        if ( localPath.includes('http')) {
+            const response = await fetch(md);
+            const markdownText = await response.text();
+            compiledMarkdown.value = marked(markdownText);
+        }else{
+            const markdownText = await api.invoke('readLocalFile', md);
+            compiledMarkdown.value = marked(markdownText);
+        }
 
         let time = setTimeout(() => {
             const blocks = document.querySelectorAll('pre code')

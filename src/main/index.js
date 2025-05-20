@@ -7,6 +7,7 @@ import icon from '../../resources/icon.png?asset'
 import { Storage, setupStorageIPC } from './store'
 import { fetchBaiduHotSearch } from './news'
 import { scanMusic } from './mp3'
+import { scanMd } from './mds'
 import { readImagesFromDir } from './wrap'
 import wallpaper from 'wallpaper';
 import mime from 'mime-types';
@@ -319,6 +320,25 @@ app.whenReady().then(() => {
   // 示例：在某个 IPC 通信中调用
   ipcMain.handle('set-auto-launch', (_, enabled) => {
     setAutoLaunch(enabled)
+  })
+
+
+  ipcMain.handle('readLocalFile', async (event, filePath) => {
+      return new Promise((resolve, reject) => {
+          fs.readFile(filePath, 'utf-8', (err, data) => {
+              if (err) {
+                  reject(err);
+              } else {
+                  resolve(data);
+              }
+          });
+      });
+  });
+
+  // 获取md列表
+  ipcMain.handle('get-md-list', async (event, src) => {
+    if (!src) return
+    return await scanMd(src)
   })
 
   // 创建托盘图标

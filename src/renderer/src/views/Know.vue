@@ -19,18 +19,29 @@
 </template>
 <script setup>
 import { configs } from '@renderer/config.js';
-import { pathList  } from 'https://ghchenjingqi.github.io/home/public/pathList.js'
 import { ref , onMounted} from 'vue';
+// import { pathList  } from 'https://ghchenjingqi.github.io/home/public/pathList.js'
+
 const { base, knowledge } = configs();
 const knowFiles = base + knowledge.mds
 
-const menus = ref([]), menusList = ref([])
+const menus = ref([]), menusList = ref([]), isLocal = ref(false);
+
+const getName = (path)=>{
+    const parts = path.split('\\');
+    const filenameWithExt = parts[parts.length - 1]; // "Axios.md"
+    const filename = filenameWithExt.replace('.md', '');
+    return filename;
+}
 const menusInit = (List)=>{
     return List.map(item=>{
-        const path = knowFiles + item
+        const path = isLocal.value ? item : knowFiles + item 
         let name = item
         if (name.includes('.md')) {
-            name = name.replace('.md', '')
+            if (isLocal.value) {
+                name = getName(name)
+            }
+            name =  name.replace('.md', '')
             // 首字母大写
             name = name.replace(name[0], name[0].toUpperCase())
         }
@@ -57,9 +68,28 @@ const submit = (e) => {
     menus.value = menusInit(res)
 }
 
-onMounted(()=>{
-    menusList.value = menusInit(pathList)
-    menus.value = menusList.value
+onMounted(async () => {
+    let pathList=[];
+    let localPath = await api.storage.get('remoteMd') || ''
+    try {
+        if (localPath.includes(base)) {
+            isLocal.value = false
+            const module = await import('https://ghchenjingqi.github.io/home/public/pathList.js');
+            pathList = module.pathList;
+        }else{
+            if (localPath) {
+                // 获取本地目录的路径
+                isLocal.value = true
+                pathList = await api.invoke('get-md-list', localPath);
+            }
+        }
+    } catch (error) {
+        pathList = [];
+        isLocal.value = true
+    }
+
+    menusList.value = menusInit(pathList);
+    menus.value = menusList.value;
 })
 
 </script>

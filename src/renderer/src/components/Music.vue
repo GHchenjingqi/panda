@@ -118,6 +118,7 @@ const nextPlay = () => {
     audio.setNextSrc()
     audio.play()
     musicState.value.name = audio.getTitle()
+    changeMusicPlayIcon(1)
     setProgress()
 }
 const changePlay = () => {
