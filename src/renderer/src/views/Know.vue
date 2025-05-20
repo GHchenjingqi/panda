@@ -20,19 +20,14 @@
 <script setup>
 import { configs } from '@renderer/config.js';
 import { ref , onMounted} from 'vue';
-// import { pathList  } from 'https://ghchenjingqi.github.io/home/public/pathList.js'
+import { getName } from '@/utils/comfun.js'
 
 const { base, knowledge } = configs();
 const knowFiles = base + knowledge.mds
 
 const menus = ref([]), menusList = ref([]), isLocal = ref(false);
+let pathList=[];
 
-const getName = (path)=>{
-    const parts = path.split('\\');
-    const filenameWithExt = parts[parts.length - 1]; // "Axios.md"
-    const filename = filenameWithExt.replace('.md', '');
-    return filename;
-}
 const menusInit = (List)=>{
     return List.map(item=>{
         const path = isLocal.value ? item : knowFiles + item 
@@ -69,7 +64,6 @@ const submit = (e) => {
 }
 
 onMounted(async () => {
-    let pathList=[];
     let localPath = await api.storage.get('remoteMd') || ''
     try {
         if (localPath.includes(base)) {

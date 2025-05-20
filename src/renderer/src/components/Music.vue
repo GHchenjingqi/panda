@@ -24,6 +24,12 @@
             </div>
         </div>
     </div>
+    <div class="music-list">
+        <h3>即将播放 <span>共{{ musicList.length }}首</span></h3>
+        <ul class="ao">
+            <li v-for="(item,index) in musicList" :class="{ 'curActive': index == cur }" :key="item" @click="playHandle(item)">{{ item }}</li>
+        </ul>
+    </div>
     <Notice v-if="msg" :message="msg" :type="infotype" />
 </template>
 <script setup>
@@ -36,12 +42,15 @@ import randomicons from '@/assets/images/random.png'
 import sigleicon from '@/assets/images/sigle.png'
 import randomicon from '@/assets/images/random_s.png'
 import sigleicons from '@/assets/images/sigle_s.png'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { inject } from 'vue';
 import audio from '@/utils/audio';
+import { getName } from '@/utils/comfun.js'
 
 const msg = ref('')
 const infotype = ref('')
+const musicList = ref([])
+const cur = ref(0)
 const sendMSG = (newmsg, type = 'success') => {
     msg.value = newmsg
     infotype.value = type
@@ -91,6 +100,15 @@ const changeRandom = (type) => {
     }
 }
 
+
+const playHandle = async (item,index) => {
+    cur.value = index
+    musicState.value.name = item
+    audio.playByName(item)
+    setProgress()
+    changeMusicPlayIcon(1)
+}
+
 let timer = null
 
 const setProgress = () => {
@@ -116,10 +134,13 @@ const setProgress = () => {
 const nextPlay = () => {
     audio.pause()
     audio.setNextSrc()
-    audio.play()
     musicState.value.name = audio.getTitle()
-    changeMusicPlayIcon(1)
-    setProgress()
+    if (musicState.value.name !=  '暂无音乐' &&  musicState.value.name  != '暂无播放') {
+        audio.play()
+        musicState.value.play = true
+        changeMusicPlayIcon(1)
+        setProgress()
+    }
 }
 const changePlay = () => {
     if (audio && musicState.value.name  &&  audioSize > 0) {
@@ -153,6 +174,22 @@ const changeProgress = (val) => {
     }
 }
 
+let audioSize = 0
+const getMusicList = async () => { 
+    let res = localStorage.getItem('musicList') || null
+    if(!res){
+        res = await audio.getMusics()
+        res = res.map(item => {
+            return getName(item, ['.mp3','.flac'])
+        })
+        localStorage.setItem('musicList', JSON.stringify(res))
+    }else{
+        res = JSON.parse(res)
+    }
+    return res
+
+}
+
 const getMusic = async () => {
     if (!audio.paused) {
         audio.pause()
@@ -181,11 +218,10 @@ const getMusic = async () => {
         }
     }
 }
-let audioSize = 0
 const init = async () => {
-    let res = await audio.getMusics()
-    audioSize = res.length
-    res = audio.getAudioStatus()
+    musicList.value = await getMusicList()
+    audioSize = musicList.value.length
+    let res = audio.getAudioStatus()
     if (res) {
         musicState.value = res
         if (res.play) {
@@ -248,7 +284,7 @@ const setupSpaceListener = (callback, delay = 300) => {
         }
     });
     _listenerSetup = true
-};
+}
 
 const bodyClick = () => {
     // 模拟点击，触发音频播放潜质
@@ -260,6 +296,25 @@ const bodyClick = () => {
 
     document.body.dispatchEvent(clickEvent);
 }
+
+const getcur = (name) => { 
+    let cur = 0
+    for  (let i = 0; i < musicList.value.length; i++) {
+        if (musicList.value[i] == name) {
+            cur = i
+            break
+        }
+    }
+    return cur
+}
+
+
+watch(()=> musicState.value.name ,(news,olds)=>{
+    if (news && news != olds) {
+        cur.value  = getcur(news)
+    }
+})
+
 onMounted(() => {
     bodyClick()
     changeMusicPlayIcon(0)
@@ -275,7 +330,7 @@ onUnmounted(() => {
 </script>
 <style scoped>
 .music {
-    height: 100%;
+    height: 90px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -359,5 +414,49 @@ onUnmounted(() => {
     to {
         transform: rotate(360deg);
     }
+}
+
+.music-list h3{
+    padding-top: 1rem;
+    width: 100%;
+    overflow: hidden;
+    font-weight: 600;
+    font-size: 1.04rem;
+}
+.music-list h3 span{
+    float: right;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+.music-list ul{
+    margin-top: .6rem;
+    height: 216px;
+    padding: 1rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    border-radius: 1rem;
+}
+.music-list ul::-webkit-scrollbar{
+    width: 8px;
+}
+.music-list ul li{
+    font-size: .9rem;
+    line-height: 1.8;
+    padding: 0 0.6rem;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+.music-list ul li:hover,.curActive{
+    color: var(--mc);
+    border-radius: 0.3rem;
+    overflow: hidden;
+    background: #d2d9ff;
+}
+.music-list ul li:hover{
+   opacity: .68;
 }
 </style>

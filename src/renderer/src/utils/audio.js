@@ -1,8 +1,8 @@
+import { sleep } from "./comfun";
+
 let musicList = [], active , sigle , random;
 let Listener = false
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+
 class AudioPlayer {
     constructor(src) {
       this.audio = new Audio();
@@ -33,27 +33,29 @@ class AudioPlayer {
        musicList = await api.invoke('get-music',src)
        return musicList
     }
-    setNextSrc(){
-        if (musicList && musicList.length) {
-            if (!sigle) {
-                if (!random) {
-                    if (active > musicList.length - 1) {
-                        active = 1
-                    }else{
-                        active++
-                    }
-                }else{
-                    active = Math.floor(Math.random() * musicList.length)
-                }
-            }else{
-                if(random){
-                    active = Math.floor(Math.random() * musicList.length)
-                }
+    setNextSrc() {
+    if (musicList && musicList.length) {
+        let len = musicList.length;
+        if (!sigle) {
+            if (!random) {
+                // 顺序播放
+                active = (active + 1) % len; // 循环播放
+            } else {
+                // 随机播放
+                active = Math.floor(Math.random() * len); // 包括 0 到 len-1
             }
-            let src = musicList[active - 1]
-            this.audio.src = this.getAssetURL(src);
+        } else {
+            if (random) {
+                active = Math.floor(Math.random() * len);
+            } else {
+                active = active; // 单曲循环
+            }
         }
+
+        let src = musicList[active];
+        this.audio.src = this.getAssetURL(src);
     }
+}
     getTitle(){
         if (!this.audio.src) return '暂无播放'
         let src = decodeURIComponent(this.audio.src)
@@ -103,7 +105,13 @@ class AudioPlayer {
     async getRandom() {
         return await api.storage.get('musicRandom')
     }
-
+    async playByName(name) { 
+        let src = musicList.find(item => item.includes(name))
+        if (src) {
+            this.setSource(this.getAssetURL(src))
+            this.play()
+        }
+    }
     // 播放音频
     async play() {
         if (!this.audio.src) return

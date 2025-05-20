@@ -24,7 +24,7 @@
                     <span>写一篇</span>
                 </div>
             </div>
-            <div class="item tu w2">
+            <div class="item tu w2 music-box">
                 <Music />
             </div>
         </div>
@@ -90,7 +90,7 @@ const goyuque = ()=>{
 }
 .item{
     border-radius: var(--radius);
-    height: 100%;
+    height:120px;
     box-sizing: border-box;
     padding: 1rem;
     position: relative;
@@ -159,5 +159,12 @@ const goyuque = ()=>{
     font-size: 1rem;
     font-weight: 600;
     font-family: '微软雅黑';
+}
+
+.music-box:hover{
+    position: sticky;
+    height: 400px;
+    transition: all 0.5s;
+    z-index: 9999;
 }
 </style>

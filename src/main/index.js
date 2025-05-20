@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, screen, dialog, protocol,Tray, Menu } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, screen, dialog, protocol, Tray, Menu } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import { join } from 'path'
@@ -13,7 +13,7 @@ import wallpaper from 'wallpaper';
 import mime from 'mime-types';
 import AutoLaunch from 'auto-launch';
 
-let mainWindow = null, childWin = null,  tray = null;
+let mainWindow = null, childWin = null, tray = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -124,7 +124,6 @@ function createWindow() {
   }
 }
 
-
 // 配置开机启动
 function setAutoLaunch(enabled) {
   const autoLauncher = new AutoLaunch({
@@ -170,15 +169,7 @@ function getPlatformIcon() {
   }
 }
 
-app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.electron')
-
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
-  setupStorageIPC()
-
+const ipcHandle = () => {
   // 创建子窗口
   ipcMain.on('creatChildWinow', (_, data) => {
     if (!childWin || childWin.isDestroyed()) {
@@ -263,6 +254,7 @@ app.whenReady().then(() => {
     win.setPosition(safeX, safeY)
   });
 
+
   // 设置桌面壁纸
   ipcMain.on('set-wallpaper', async (_, src) => {
     if (!src) return
@@ -324,15 +316,15 @@ app.whenReady().then(() => {
 
 
   ipcMain.handle('readLocalFile', async (event, filePath) => {
-      return new Promise((resolve, reject) => {
-          fs.readFile(filePath, 'utf-8', (err, data) => {
-              if (err) {
-                  reject(err);
-              } else {
-                  resolve(data);
-              }
-          });
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, 'utf-8', (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
       });
+    });
   });
 
   // 获取md列表
@@ -340,7 +332,9 @@ app.whenReady().then(() => {
     if (!src) return
     return await scanMd(src)
   })
+}
 
+const trayHandle = () => { 
   // 创建托盘图标
   tray = new Tray(icon);
   const contextMenu = Menu.buildFromTemplate([
@@ -352,15 +346,46 @@ app.whenReady().then(() => {
 
   // 监听托盘图标点击
   tray.on('click', () => mainWindow.show());
+}
 
-  createWindow()
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
+// 确保单实例应用
+const gotTheLock = app.requestSingleInstanceLock();
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
+if (!gotTheLock) {
+  app.quit(); // 如果没有获得锁，则退出新实例
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // 当有第二个实例启动时触发
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus(); // 将焦点放到已有的窗口上
+    }
+  });
+
+  // 这将在 Electron 结束初始化并准备好创建浏览器窗口时调用。
+  // 某些 API 在这个事件发生前不能使用。
+  app.whenReady().then(()=>{
+    electronApp.setAppUserModelId('com.chenxiaozhi.home')
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+    setupStorageIPC()
+    ipcHandle()
+    trayHandle()
+    createWindow()
+  });
+
+  // 其他应用生命周期事件...
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  });
+
+  app.on('activate', () => {
+    // 在macOS上，当点击Dock图标时，如果没有其他窗口打开，则应该重新创建一个窗口。
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+}
