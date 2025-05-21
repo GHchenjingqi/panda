@@ -165,6 +165,7 @@ const goyuque = ()=>{
     position: sticky;
     height: 400px;
     transition: all 0.5s;
+    box-shadow: 3px 4px 9px rgba(47, 75, 134, 0.15);
     z-index: 9999;
 }
 </style>

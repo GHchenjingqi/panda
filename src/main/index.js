@@ -1,17 +1,20 @@
 import { app, shell, BrowserWindow, ipcMain, screen, dialog, protocol, Tray, Menu } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import wallpaper from 'wallpaper';
+import mime from 'mime-types';
+import AutoLaunch from 'auto-launch';
+import screenshot from 'desktop-screenshot';
 import icon from '../../resources/icon.png?asset'
 import { Storage, setupStorageIPC } from './store'
 import { fetchBaiduHotSearch } from './news'
 import { scanMusic } from './mp3'
 import { scanMd } from './mds'
 import { readImagesFromDir } from './wrap'
-import wallpaper from 'wallpaper';
-import mime from 'mime-types';
-import AutoLaunch from 'auto-launch';
+
 
 let mainWindow = null, childWin = null, tray = null;
 
@@ -332,9 +335,32 @@ const ipcHandle = () => {
     if (!src) return
     return await scanMd(src)
   })
+
+
+  // 截图功能
+  ipcMain.on('capture-region', (event, rect) => {
+    const tempPath = os.tmpdir() + '/region-screenshot.png';
+
+    screenshot(tempPath, {
+      filename: tempPath,
+      width: rect.width,
+      height: rect.height,
+      x: rect.x,
+      y: rect.y
+    }, async function (err) {
+      if (err) {
+        console.error('截图失败:', err);
+        return;
+      }
+
+      const image = nativeImage.createFromPath(tempPath);
+      clipboard.writeImage(image);
+      console.log('截图已复制到剪贴板');
+    });
+  });
 }
 
-const trayHandle = () => { 
+const trayHandle = () => {
   // 创建托盘图标
   tray = new Tray(icon);
   const contextMenu = Menu.buildFromTemplate([
@@ -347,6 +373,8 @@ const trayHandle = () => {
   // 监听托盘图标点击
   tray.on('click', () => mainWindow.show());
 }
+
+
 
 // 确保单实例应用
 const gotTheLock = app.requestSingleInstanceLock();
@@ -364,7 +392,7 @@ if (!gotTheLock) {
 
   // 这将在 Electron 结束初始化并准备好创建浏览器窗口时调用。
   // 某些 API 在这个事件发生前不能使用。
-  app.whenReady().then(()=>{
+  app.whenReady().then(() => {
     electronApp.setAppUserModelId('com.chenxiaozhi.home')
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
@@ -381,6 +409,7 @@ if (!gotTheLock) {
       app.quit();
     }
   });
+
 
   app.on('activate', () => {
     // 在macOS上，当点击Dock图标时，如果没有其他窗口打开，则应该重新创建一个窗口。

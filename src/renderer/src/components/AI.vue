@@ -13,6 +13,9 @@ import ty from '@/assets/images/ty.png'
 import yb from '@/assets/images/yb.png'
 import zp from '@/assets/images/zp.png'
 import wx from '@/assets/images/wxyy.png'
+import kimi from '@/assets/images/kimi.png'
+import kl from '@/assets/images/keling.png'
+import jm from '@/assets/images/jimeng.png'
 const list = [
     {
         img: ds,
@@ -44,6 +47,21 @@ const list = [
         text: '豆包',
         link: 'https://www.doubao.com/chat/'
     },
+    {
+        img: kimi,
+        text: 'Kimi',
+        link: 'https://www.kimi.com/'
+    },
+     {
+        img: jm,
+        text: '即梦',
+        link: 'https://jimeng.jianying.com/ai-tool/home/'
+    },
+     {
+        img: kl,
+        text: '可灵',
+        link: 'https://app.klingai.com/cn/'
+    },
 ]
 
 const openLink = (link)=>{
@@ -57,7 +75,7 @@ const openLink = (link)=>{
     }
     .item{
         padding: 1rem 0 0.2rem;
-        width: 16.666%;
+        width: 11.1%;
         float: left;
         text-align: center;
         cursor: pointer;

@@ -1,15 +1,29 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import fs from 'fs'
 
-// 阻止F11的默认行为
-window.addEventListener('keydown', function(event) {
-  if (event.key === 'F11') {
-      event.preventDefault(); 
-      return false;
-  }
-}, true);
 
+let keys = {};
+document.addEventListener('keydown', function(event) {
+    // 阻止F11的默认行为
+    if (event.key === 'F11') {
+        event.preventDefault(); 
+        return false;
+    }
+    // 记录按键状态
+    keys[event.key] = true;
+
+    // 检查是否同时按下了Ctrl和S键
+    // if(keys['Control'] && keys['s']) {
+    //     event.preventDefault(); // 阻止默认行为
+    //     console.log('Ctrl + S 被按下了');
+    //     // 在这里执行你想要的操作
+    // }
+});
+
+document.addEventListener('keyup', function(event) {
+    // 更新按键状态
+    delete keys[event.key];
+});
 
 // Custom APIs for renderer
 const api = {

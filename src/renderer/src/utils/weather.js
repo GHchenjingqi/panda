@@ -65,7 +65,7 @@ let weatherCache = {
     timestamp: 0
 };
  
-const CACHE_DURATION = 20 * 60 * 60 * 1000; // 6小时（毫秒）
+const CACHE_DURATION = 0.5 * 60 * 60 * 1000; // 0.5小时（毫秒）
 export const initWeather = async()=>{ 
     const cachedData = localStorage.getItem('weatherCache');
     if (cachedData) {

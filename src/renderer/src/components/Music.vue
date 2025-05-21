@@ -26,9 +26,10 @@
     </div>
     <div class="music-list">
         <h3>即将播放 <span>共{{ musicList.length }}首</span></h3>
-        <ul class="ao">
+        <ul class="ao" v-if="musicList.length > 0">
             <li v-for="(item,index) in musicList" :class="{ 'curActive': index == cur }" :key="item" @click="playHandle(item)">{{ item }}</li>
         </ul>
+        <div class="ao music-list-empty" v-else>暂无播放列表</div>
     </div>
     <Notice v-if="msg" :message="msg" :type="infotype" />
 </template>
@@ -202,6 +203,12 @@ const getMusic = async () => {
     if (res) {
         if (res.length) {
             sendMSG(`成功获取到${res.length}首音乐！`, 'success')
+            audioSize = res.length
+            res = res.map(item => {
+                return getName(item, ['.mp3','.flac'])
+            })
+            musicList.value = res
+            localStorage.setItem('musicList', JSON.stringify(res))
             await audio.init()
             let title = audio.getTitle()
             if (title) {
@@ -429,13 +436,18 @@ onUnmounted(() => {
     font-size: 0.8rem;
     font-weight: 400;
 }
-.music-list ul{
+.music-list ul,.music-list-empty{
     margin-top: .6rem;
     height: 216px;
     padding: 1rem;
     box-sizing: border-box;
     overflow-y: auto;
     border-radius: 1rem;
+}
+.music-list-empty{
+    line-height: 180px;
+    text-align: center;
+    font-size: 0.8rem;
 }
 .music-list ul::-webkit-scrollbar{
     width: 8px;
