@@ -83,8 +83,15 @@ const openLink = (link)=>{
     .item img{
         width: 48px;
         height: 48px;
+        transition: all 0.3s;
     }
     .item p{
         font-size: 0.8rem;
+    }
+    .item:hover img{
+        transform: scale(1.1);
+    }
+    .item:hover p{
+        color: var(--mc);
     }
 </style>

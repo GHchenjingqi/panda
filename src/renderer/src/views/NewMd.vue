@@ -119,7 +119,7 @@ onMounted(()=>{
         --md-scrollbar-thumb-color: var(--mc) !important;
         
         border-radius: 16px;
-        height: 550px;
+        height: calc(100vh - 32px);
         padding: 1rem;
         box-sizing: border-box;
         background: var(--white);

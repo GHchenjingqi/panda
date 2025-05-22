@@ -15,7 +15,7 @@
                     </div>
                 </div>
             </div>
-            <div class="item tu w1">
+            <div class="item tu w1 point">
                 <div class="mark">
                     <span>知识库 <i>{{knows}}</i> 篇</span>
                 </div>
@@ -48,8 +48,6 @@ import yumao from '@/assets/images/yumao.png'
 import site from '@/assets/images/site.png'
 import { pathList  } from 'https://ghchenjingqi.github.io/home/public/pathList.js'
 import { initWeather,weatherList } from '@/utils/weather.js'
-import { useRouter } from 'vue-router'
-const router = useRouter()
 
 const weather = ref({wt: '',})
 const knows = ref(0)
@@ -74,7 +72,8 @@ onMounted( async()=>{
     clearInterval(timer)
  })
 const goyuque = ()=>{
-    router.push('/nmd')
+    window.api.send('createMdEditWindow')
+    // router.push('/nmd')
 }
 </script>
 <style scoped>

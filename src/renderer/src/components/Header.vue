@@ -39,7 +39,7 @@ const mousedown = (e) => {
 }
 
 const gogit = () => {
-  window.open('https://github.com/GHchenjingqi')
+  window.open('https://github.com/GHchenjingqi/panda')
 }
 let isToggling = false; // 防抖标志
 const oper = (type) => {

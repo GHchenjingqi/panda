@@ -7,7 +7,7 @@ export const configs = ()=>{
         settings:{
             showMD: false,
             remoteMd:'https://ghchenjingqi.github.io/home/public/pathList.js',
-            allscreenPath: ['/md'],
+            allscreenPath: ['/md','/nmd'],
             // 本地音乐路径
             musicPath: '',
             // 本地壁纸路径

@@ -38,6 +38,12 @@ const api = {
       callback(message);
     });
   },
+  getVersion:(callback)=>{
+    ipcRenderer.on('app-version', (event, message) => {
+      console.log('app-version12312:', message);
+      callback(message);
+    });
+  },
   storage: {
     get: (key, defaultValue) => ipcRenderer.invoke('storage:get', { key, defaultValue }),
     set: (key, value) => ipcRenderer.invoke('storage:set', { key, value }),

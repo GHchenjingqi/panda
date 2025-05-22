@@ -123,12 +123,13 @@ onMounted(async () => {
         padding: 2rem;
         box-sizing: border-box;
         height: auto;
+        max-height: 480px;
         border-radius: var(--radius);
     }
     .list ul{
         width: 100%;
         height: 100%;
-        max-height: calc(100vh - 140px - 82px);
+        max-height: calc(480px - 82px);
         overflow: hidden;
         overflow-y: auto;
     }

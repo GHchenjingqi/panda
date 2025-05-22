@@ -1,22 +1,22 @@
 import { app, shell, BrowserWindow, ipcMain, screen, dialog, protocol, Tray, Menu } from 'electron'
 import path from 'path'
 import fs from 'fs'
-import os from 'os'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import wallpaper from 'wallpaper';
 import mime from 'mime-types';
 import AutoLaunch from 'auto-launch';
-import screenshot from 'desktop-screenshot';
 import icon from '../../resources/icon.png?asset'
 import { Storage, setupStorageIPC } from './store'
 import { fetchBaiduHotSearch } from './news'
 import { scanMusic } from './mp3'
 import { scanMd } from './mds'
 import { readImagesFromDir } from './wrap'
+import packageJson from '../../package.json';
 
 
-let mainWindow = null, childWin = null, tray = null;
+
+let mainWindow = null, childWin = null, childWin2 = null, tray = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -34,6 +34,14 @@ function createWindow() {
       sandbox: false
     }
   })
+  // 应用版本号
+  console.log('app-version:', packageJson.version)
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.send('app-version', packageJson.version);
+  });
+
 
   protocol.registerFileProtocol('electron', (request, callback) => {
     // 1. 移除协议头
@@ -173,6 +181,45 @@ function getPlatformIcon() {
 }
 
 const ipcHandle = () => {
+  // 创建MD编辑子窗口
+  ipcMain.on('createMdEditWindow', async (event, data) => {
+    // 如果窗口已存在且未被销毁，则不再创建
+    if (childWin && !childWin.isDestroyed()) {
+      childWin.focus(); // 可选：聚焦已有窗口
+      return;
+    }
+
+    // 获取屏幕大小
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width, height } = primaryDisplay.workAreaSize;
+
+    // 创建新窗口
+    childWin = new BrowserWindow({
+      width,
+      height,
+      autoHideMenuBar: true,
+      icon: getIconPath(),
+      webPreferences: {
+        preload: join(__dirname, '../preload/index.js'),
+        sandbox: false
+      }
+    });
+
+    const routepath = "/nmd";
+
+    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+      const url = process.env['ELECTRON_RENDERER_URL'] + `/#${routepath}`;
+      childWin.loadURL(url);
+    } else {
+      childWin.loadFile(path.join(__dirname, '../renderer/index.html'), { hash: routepath });
+    }
+
+    // 监听关闭事件，重置 childWin 引用
+    childWin.on('closed', () => {
+      childWin = null;
+    });
+  });
+
   // 创建子窗口
   ipcMain.on('creatChildWinow', (_, data) => {
     if (!childWin || childWin.isDestroyed()) {
@@ -336,28 +383,6 @@ const ipcHandle = () => {
     return await scanMd(src)
   })
 
-
-  // 截图功能
-  ipcMain.on('capture-region', (event, rect) => {
-    const tempPath = os.tmpdir() + '/region-screenshot.png';
-
-    screenshot(tempPath, {
-      filename: tempPath,
-      width: rect.width,
-      height: rect.height,
-      x: rect.x,
-      y: rect.y
-    }, async function (err) {
-      if (err) {
-        console.error('截图失败:', err);
-        return;
-      }
-
-      const image = nativeImage.createFromPath(tempPath);
-      clipboard.writeImage(image);
-      console.log('截图已复制到剪贴板');
-    });
-  });
 }
 
 const trayHandle = () => {
