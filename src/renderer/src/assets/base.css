@@ -1,16 +1,3 @@
-:root {
-  --mc: #0055ff;
-  --white: #ffffff;
-  --black: #1b1b1f;
-  --startColor: #eef3fc ;
-  --endColor: #f0f5ff;
-  --mdbtn: #b8cbf0;
-  --bgcolor: var(--endColor);
-  --linegrad: linear-gradient(45deg,var(--startColor), var(--endColor));
-  --radius: 16px;
-  --textColor: #23375d;
-}
-
 *,
 *::before,
 *::after {

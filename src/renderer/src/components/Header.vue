@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from 'vue';
+import light from '@/assets/images/light.png'
+import dark from '@/assets/images/dark.png'
 // 节流函数优化频繁的 IPC 通信
 const throttleMove = (fn, delay = 16) => {
   let lastCall = 0
@@ -48,13 +50,20 @@ const oper = (type) => {
   window.api.invoke('oper',type);
   setTimeout(() => { isToggling = false; }, 300);
 }
+
+const themeFlag = ref(false)  
+const changeTheme = async () => {
+  themeFlag.value = !themeFlag.value
+  await api.storage.set('theme', themeFlag.value ? 'dark' : 'light')
+  document.documentElement.classList.toggle('dark');
+}
 </script>
 <template>
-  <div class="header"  @mousedown="mousedown">
+  <div class="header" :class="{'lighter': themeFlag}"  @mousedown="mousedown">
     <div class="oper">
       <img src="@/assets/images/git.png" class="git" @click="gogit" alt="">
+      <img :src="themeFlag ? dark : light" @click="changeTheme" alt=""> 
       <img src="@/assets/images/min.png" @click="oper('min')" alt="">
-      <!-- <img src="@/assets/images/max.png" @click="oper('max')" alt=""> -->
       <img src="@/assets/images/out.png" @click="oper('close')" alt="">
     </div>
   </div>
@@ -65,11 +74,14 @@ const oper = (type) => {
         user-select: none;
         background: transparent;
     }
+    .lighter img{
+      filter: invert(0.32);
+    }
     .oper{
       padding-top: 10px;
       text-align: right;
       padding-right: 0.5rem;
-      background: linear-gradient(to bottom, rgba(211, 230, 255, 0.5), rgba(255,255,255,0));
+      background: linear-gradient(to bottom, var(--headerStart),  var(--headerEnd));
     }
     .oper img{
       padding: 0.5rem;

@@ -25,7 +25,7 @@
         </div>
         <div class="item">
             <label for="showMD">开启知识库</label>
-            <input type="checkbox" class="checkbox ao" v-model="form.showMD">
+            <input type="checkbox" class="checkbox" v-model="form.showMD">
         </div>
         <div class="item" v-if="form.showMD">
             <label for="mdPath">知识库地址</label>
@@ -34,7 +34,7 @@
         </div>
         <div class="item">
             <label for="autoLaunch">开机自启</label>
-            <input type="checkbox" class="checkbox ao" v-model="form.autoLaunch">
+            <input type="checkbox" class="checkbox" v-model="form.autoLaunch">
         </div>
     </div>
     <div class="btn-group">
@@ -134,8 +134,11 @@ onMounted(async () => {
     width: 360px;
     padding: 0 .6rem;
     box-sizing: border-box;
-    border-color:var(--white);
+    border: 1px solid;
+    border-color:var(--textColor);
     border-radius: 8px;
+    background: var(--bgcolor);
+    color: var(--textColor);
     height:36px
 }
 .set input:focus{

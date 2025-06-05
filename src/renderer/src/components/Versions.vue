@@ -27,7 +27,7 @@ onMounted(()=>{
     left: 0;
     bottom: 5px;
     opacity: 0.4;
-    background: linear-gradient(to bottom, rgba(211, 230, 255,0), rgba(255,255,255,0.5));
+    background: linear-gradient(to bottom, var(--headerEnd), var(--headerStart));
   }
   .versions span{
     margin: 0 10px;

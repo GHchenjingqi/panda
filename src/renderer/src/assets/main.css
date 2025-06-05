@@ -3,6 +3,57 @@
 body{
   font-size: 16px;
 }
+:root {
+  --mc: #0055ff;
+  --white: #ffffff;
+  --black: #1b1b1f;
+  --startColor: #eef3fc ;
+  --endColor: #f0f5ff;
+  --mdbtn: #b8cbf0;
+  --bgcolor: var(--endColor);
+  --linegrad: linear-gradient(45deg,var(--startColor), var(--endColor));
+
+ 
+  --radius: 16px;
+  --textColor: #23375d;
+
+  --borderColor: rgba(255, 255, 255, .86);
+  --shadowStart: rgba(218, 228, 247, 0.4);
+  --shadowEnd: rgba(255, 255, 255, .9);
+
+  --headerStart:rgba(211, 230, 255, 0.5);
+  --headerEnd:rgba(255, 255, 255, 0);
+}
+
+.dark { 
+  --bgcolor: #071e41;
+  --textColor: #ccd2dd;
+  --startColor: #112448;
+  --endColor: #001642;
+
+  --borderColor: #121d67;
+  --shadowStart: rgba(0, 12, 33, 0.6);
+  --shadowEnd:  rgba(63, 76, 115, 1);
+
+  --headerStart:rgba(27, 4, 155, 0.28);
+  --headerEnd:rgba(0, 0, 0, 0);
+}
+/* 夜间模式 与dark一直 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bgcolor: #071e41;
+    --textColor: #ccd2dd;
+    --startColor: #112448;
+    --endColor: #001642;
+
+    --borderColor: #121d67;
+    --shadowStart: rgba(0, 12, 33, 0.6);
+    --shadowEnd:  rgba(63, 76, 115, 1);
+
+    --headerStart:rgba(27, 4, 155, 0.28);
+    --headerEnd:rgba(0, 0, 0, 0);
+  }
+}
 
 #app{
   background: var(--linegrad);
@@ -15,16 +66,16 @@ body{
 }
 .tu{
   background-color: var(--bgcolor);
-  border: 1px solid rgba(255, 255, 255, .86);
+  border: 1px solid var(--borderColor);
   box-sizing: border-box;
-  box-shadow: 12px 12px 16px rgba(218, 228, 247, 0.4), 
-    -4px -6px 16px rgba(255, 255, 255, 0.9);
+  box-shadow: 12px 12px 16px var(--shadowStart), 
+    -4px -6px 12px var(--shadowEnd);
 }
 
 .ao{
   background-color: var(--bgcolor);
-  border: 1px solid rgba(255, 255, 255, .86);
+  border: 1px solid  var(--borderColor);
   box-sizing: border-box;
-  box-shadow: inset 12px 12px 16px rgba(218, 228, 247, 0.4), 
-  inset  -4px -6px 16px rgba(255, 255, 255, 0.9);
+  box-shadow: inset 12px 12px 16px var(--shadowStart), 
+  inset  -4px -6px 16px var(--shadowEnd);
 }

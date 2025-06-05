@@ -1,5 +1,5 @@
 <template>
-    <MdEditor class="md-editor ao" v-model="text" :toolbars="toolbars" @onSave="handleSave"></MdEditor>
+    <MdEditor class="md-editor ao" :class="{'md-dark': theme == 'dark'}" v-model="text" :toolbars="toolbars" @onSave="handleSave"></MdEditor>
     <div class="open-file">
         <div class="item"  @click="handleOpenFile">
             <svg t="1746517476631" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2871" width="18" height="18"><path d="M275.84 160H124.192l1.824 580.096a32 32 0 0 1-64 0L60.16 160a64 64 0 0 1 64-64h177.92l97.28 96h498.272a32 32 0 1 1 0 64H373.152l-97.28-96z" fill="#515151" p-id="2872"></path><path d="M127.52 735.616a32 32 0 0 1-63.04-10.944l54.624-314.144C127.904 359.936 174.784 320 225.76 320h668.864c55.36 0 93.92 46.72 84.384 101.472l-72.32 416C897.824 888.064 850.976 928 800 928H160a32 32 0 0 1 0-64h640c19.712 0 40.096-17.376 43.616-37.472l72.32-416c2.784-15.904-5.984-26.528-21.312-26.528H225.76c-19.68 0-40.096 17.376-43.584 37.472l-54.656 314.144z" fill="#515151" p-id="2873"></path></svg>
@@ -94,6 +94,7 @@ const handleSave =async ()=>{
     sendMSG(`文件已存至：${src}目录`, 'success')
 }
 
+const theme = ref('light')
 onMounted(()=>{
     text.value = window.localStorage.getItem('text') || ''
 })
@@ -124,6 +125,7 @@ onMounted(()=>{
         box-sizing: border-box;
         background: var(--white);
     }
+    .md-editor.md-dark{}
     .open-file{
         width: 80px;
         position: absolute;

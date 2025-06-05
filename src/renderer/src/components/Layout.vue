@@ -32,6 +32,11 @@ const setAppBG = async ()=>{
         const paths =  'asset://' + encodeURIComponent(src)
         app.style.backgroundImage = `url('${paths}')`
     }
+
+    let theme = await api.storage.get('theme') || 'light' 
+    if (theme=='dark') {
+       document.documentElement.classList.toggle('dark');
+    }
 }
 onMounted(()=>{
     setAppBG()
