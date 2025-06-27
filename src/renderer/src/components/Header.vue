@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref ,onMounted} from 'vue';
 import light from '@/assets/images/light.png'
 import dark from '@/assets/images/dark.png'
 // 节流函数优化频繁的 IPC 通信
@@ -57,6 +57,10 @@ const changeTheme = async () => {
   await api.storage.set('theme', themeFlag.value ? 'dark' : 'light')
   document.documentElement.classList.toggle('dark');
 }
+
+onMounted(async ()=>{
+  themeFlag.value = await window.api.storage.get('theme') === 'dark'
+})
 </script>
 <template>
   <div class="header" :class="{'lighter': themeFlag}"  @mousedown="mousedown">

@@ -15,7 +15,7 @@
 </template>
 <script setup>
 import Notice from '@/components/Notice.vue';
-import { ref, onMounted,watch, onBeforeUnmount } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { setAppBG } from '@/utils/comfun'
 import defimg from '@/assets/images/loading.gif'
@@ -70,8 +70,8 @@ const initLazyLoading = () => {
 
 const  getWrappers = async () => {
    let wraps = window.localStorage.getItem('warppers') || null
-   if (!wraps) {
-        wraps = await api.invoke('get-imgs')
+   if (!wraps || wraps=='[]') {
+        wraps = await api.invoke('get-imgs') || []
         window.localStorage.setItem('warppers',JSON.stringify(wraps))
    }else{
         wraps = JSON.parse(wraps)

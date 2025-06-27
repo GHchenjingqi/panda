@@ -4,8 +4,9 @@
             <div class="item tu w1">
                 <div class="mark">
                     <img :src="site" alt="">
-                    <span>{{weather.city}}</span>
-                    <span>{{ weather.reportTime?.substr(0,10) }}</span>
+                    <span>{{weather.city?.substr(0, weather.city.length - 1)}}</span>
+                    <span style="font-size: 0.72rem;">{{ weather.reportTime }}</span>
+                    <img class="refresh" :class="loading ? 'rotate' : ''" @click="updataWeatherHandle" :src="flush" alt="">
                 </div>
                 <div class="weather">
                     <Weather v-if="weather.wt" :weather="weather.wt" />
@@ -46,22 +47,40 @@ import News from '@/components/News.vue'
 import Music from '@/components/Music.vue'
 import yumao from '@/assets/images/yumao.png'
 import site from '@/assets/images/site.png'
+import flush from '@/assets/images/flush.png'
+
 import { pathList  } from 'https://ghchenjingqi.github.io/home/public/pathList.js'
-import { initWeather,weatherList } from '@/utils/weather.js'
+import { initWeather,weatherList, updataWeather } from '@/utils/weather.js'
 
 const weather = ref({wt: '',})
 const knows = ref(0)
 const news = ref([])
 
+const loading = ref(false)
+const updataWeatherHandle = async ()=>{ 
+    loading.value = true
+    const { data } = await updataWeather()
+    debugger 
+    weather.value = data
+    weather.value.wt = weatherList[data.weather]
+    setTimeout(()=>{ 
+        loading.value  = false
+    },1500)
+}
 const getNewsHandle = async ()=>{
     news.value = await api.invoke('get-news') 
 }
 let timer = null
 onMounted( async()=>{
+    loading.value = true
     knows.value = pathList.length
     const { data } = await initWeather()
+    console.log("天气",data)
     weather.value = data
     weather.value.wt = weatherList[data.weather]
+    setTimeout(()=>{ 
+        loading.value  = false
+    },1500)
     getNewsHandle()
     timer = setTimeout(()=>{
         getNewsHandle()
@@ -101,6 +120,7 @@ const goyuque = ()=>{
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    position: relative;
 }
 .mark span{
     margin-right: 0.3rem;
@@ -113,6 +133,26 @@ const goyuque = ()=>{
 .mark img{
     margin-right: 0.3rem;
 }
+.refresh{
+    position: absolute;
+    right: -.4rem;
+    opacity: 0.6;
+    cursor: pointer;
+}
+.refresh.rotate{
+    animation: spin 1.5s linear infinite; /* 持续旋转 */
+  transform-origin: center center;   /* 绕中心旋转 */
+}
+/* 关键帧动画 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .add-box{
     padding-top: 1rem;
     display: flex;

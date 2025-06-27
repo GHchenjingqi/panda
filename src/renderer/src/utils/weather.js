@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { all } from 'axios';
 
 // 配置信息（需替换为你的高德API Key）
 const API_CONFIG = {
@@ -48,7 +48,8 @@ export async function getWeather(city) {
         temperature: weatherInfo.temperature + '°',
         wind: weatherInfo.winddirection +'风'+ weatherInfo.windpower + '级',
         humidity: weatherInfo.humidity + '%',
-        reportTime: weatherInfo.reporttime
+        reportTime: weatherInfo.reporttime,
+        all: response.data.lives,
       };
     } else {
       throw new Error(`天气查询失败：${response.data.info}`);
@@ -95,6 +96,15 @@ export const initWeather = async()=>{
         return weatherCache;
     }
 }
+
+export const updataWeather = async () => { 
+   localStorage.setItem('weatherCache', '');
+   weatherCache = {
+      data: null,
+      timestamp: 0
+  };
+   return await initWeather();
+};
 
 
 export const weatherList = {

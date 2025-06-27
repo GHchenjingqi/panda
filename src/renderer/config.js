@@ -20,6 +20,8 @@ export const configs = ()=>{
             appBG: '',
             // 自动登录
             autoLaunch: false,
+            // 主题色
+            theme: 'light',
         }
       
     }
