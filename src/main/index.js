@@ -14,11 +14,19 @@ import { scanMd } from './mds'
 import { readImagesFromDir } from './wrap'
 import packageJson from '../../package.json';
 
-
+// 忽略证书问题导致的异常
+app.commandLine.appendSwitch('ignore-certificate-errors')
 
 let mainWindow = null, childWin = null, childWin2 = null, tray = null;
-
 function createWindow() {
+  // console.log('electronApp.createWindow: enter')
+  // 如果窗口已存在，则聚焦它
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    // console.log('electronApp.createWindow: is exist')
+    mainWindow.show();
+    return;
+  }
+  // console.log('electronApp.createWindow: creat')
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 680,
@@ -35,8 +43,8 @@ function createWindow() {
     }
   })
   // 应用版本号
-  console.log('app-version:', packageJson.version)
-
+  // console.log('app-version:', packageJson.version)
+  // mainWindow.webContents.openDevTools(); 
   mainWindow.webContents.on('did-finish-load', () => {
     // mainWindow.webContents.openDevTools();
     mainWindow.webContents.send('app-version', packageJson.version);
@@ -160,7 +168,6 @@ async function getImgList() {
   if (!wrapsrc) return []
   return await readImagesFromDir(wrapsrc)
 }
-
 
 // 图标路径处理函数
 function getIconPath() {
@@ -355,7 +362,7 @@ const ipcHandle = () => {
       if (err) {
         return console.error('is error:', err);
       }
-      console.log(title + ' is ok');
+      // console.log(title + ' is ok');
     });
   });
 
@@ -401,23 +408,27 @@ const trayHandle = () => {
 
 
 
-// 确保单实例应用
-const gotTheLock = app.requestSingleInstanceLock();
-
+// 单例4.0版
+const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
-  app.quit(); // 如果没有获得锁，则退出新实例
+  // console.log('myWindow is quit')
+  app.quit()
 } else {
+  // console.log('myWindow is not quit')
   app.on('second-instance', (event, commandLine, workingDirectory) => {
-    // 当有第二个实例启动时触发
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus(); // 将焦点放到已有的窗口上
+    // 当运行第二个实例时,将会聚焦到myWindow这个窗口
+    if (myWindow) {
+      if (myWindow.isMinimized()) myWindow.restore()
+      myWindow.focus()
+      // console.log('myWindow is focused but not visible')
     }
-  });
 
-  // 这将在 Electron 结束初始化并准备好创建浏览器窗口时调用。
+  })
+  // console.log('myWindow is not quit 22')
+
   // 某些 API 在这个事件发生前不能使用。
   app.whenReady().then(() => {
+    // console.log('myWindow is not quit 33')
     electronApp.setAppUserModelId('com.chenxiaozhi.home')
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
@@ -435,6 +446,13 @@ if (!gotTheLock) {
     }
   });
 
+  app.on('will-quit', () => {
+    // 清理托盘图标
+    if (tray) {
+      tray.destroy();
+      tray = null;
+    }
+  });
 
   app.on('activate', () => {
     // 在macOS上，当点击Dock图标时，如果没有其他窗口打开，则应该重新创建一个窗口。

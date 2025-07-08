@@ -1,6 +1,6 @@
 {
   "name": "panda-app",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "Panda，是一款本地壁纸、音乐、文档的管理器，桌面ElectronVite  + Vue3 + Nodejs",
   "main": "./out/main/index.js",
   "author": "https://github.com/GHchenjingqi",
@@ -9,13 +9,12 @@
   "github": "https://github.com/GHchenjingqi/panda",
   "scripts": {
     "dev": "electron-vite dev",
-    "build": "electron-vite build",
-    "start": "electron-vite preview",
+    "start": "electron-vite build && electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build:unpack": "electron-vite build && electron-builder --dir",
+    "build:win": "electron-vite build && electron-builder --win",
+    "build:mac": "electron-vite build && electron-builder --mac",
+    "build:linux": "electron-vite build && electron-builder --linux"
   },
   "build": {
     "nsis": {

@@ -60,7 +60,6 @@ const loading = ref(false)
 const updataWeatherHandle = async ()=>{ 
     loading.value = true
     const { data } = await updataWeather()
-    debugger 
     weather.value = data
     weather.value.wt = weatherList[data.weather]
     setTimeout(()=>{ 
@@ -75,7 +74,7 @@ onMounted( async()=>{
     loading.value = true
     knows.value = pathList.length
     const { data } = await initWeather()
-    console.log("天气",data)
+    // console.log("天气",data)
     weather.value = data
     weather.value.wt = weatherList[data.weather]
     setTimeout(()=>{ 
