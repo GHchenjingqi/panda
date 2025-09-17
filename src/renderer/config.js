@@ -1,12 +1,12 @@
 export const configs = ()=>{
     return {
-        base:'https://ghchenjingqi.github.io/home/public',
+        base:'https://ghchenjingqi.github.io/resources/mds',
         knowledge:{
-            mds: '/mds/'
+            mds: '/statics/'
         },
         settings:{
             showMD: false,
-            remoteMd:'https://ghchenjingqi.github.io/home/public/pathList.js',
+            remoteMd:'https://ghchenjingqi.github.io/resources/mds/pathList.js',
             allscreenPath: ['/md','/nmd'],
             // 本地音乐路径
             musicPath: '',

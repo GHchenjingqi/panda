@@ -417,9 +417,9 @@ if (!gotTheLock) {
   // console.log('myWindow is not quit')
   app.on('second-instance', (event, commandLine, workingDirectory) => {
     // 当运行第二个实例时,将会聚焦到myWindow这个窗口
-    if (myWindow) {
-      if (myWindow.isMinimized()) myWindow.restore()
-      myWindow.focus()
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
       // console.log('myWindow is focused but not visible')
     }
 

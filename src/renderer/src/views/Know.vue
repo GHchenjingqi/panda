@@ -68,7 +68,7 @@ onMounted(async () => {
     try {
         if (localPath.includes(base)) {
             isLocal.value = false
-            const module = await import('https://ghchenjingqi.github.io/home/public/pathList.js');
+            const module = await import('https://ghchenjingqi.github.io/resources/mds/pathList.js');
             pathList = module.pathList;
         }else{
             if (localPath) {

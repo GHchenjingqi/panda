@@ -49,7 +49,7 @@ import yumao from '@/assets/images/yumao.png'
 import site from '@/assets/images/site.png'
 import flush from '@/assets/images/flush.png'
 
-import { pathList  } from 'https://ghchenjingqi.github.io/home/public/pathList.js'
+import { pathList  } from 'https://ghchenjingqi.github.io/resources/mds/pathList.js'
 import { initWeather,weatherList, updataWeather } from '@/utils/weather.js'
 
 const weather = ref({wt: '',})
