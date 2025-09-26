@@ -4,7 +4,7 @@
             <div class="item tu w1">
                 <div class="mark">
                     <img :src="site" alt="">
-                    <span>{{weather.city?.substr(0, weather.city.length - 1)}}</span>
+                    <span>{{getCity( weather.city) || "未知" }}</span>
                     <span style="font-size: 0.72rem;">{{ weather.reportTime }}</span>
                     <img class="refresh" :class="loading ? 'rotate' : ''" @click="updataWeatherHandle" :src="flush" alt="">
                 </div>
@@ -18,7 +18,7 @@
             </div>
             <div class="item tu w1 point">
                 <div class="mark">
-                    <span>知识库 <i>{{knows}}</i> 篇</span>
+                    <span>知识库 <i>{{knows || 0}}</i> 篇</span>
                 </div>
                 <div class="add-box" @click="goyuque">
                     <img :src="yumao" alt="">
@@ -49,12 +49,14 @@ import yumao from '@/assets/images/yumao.png'
 import site from '@/assets/images/site.png'
 import flush from '@/assets/images/flush.png'
 
-import { pathList  } from 'https://ghchenjingqi.github.io/resources/mds/pathList.js'
+// import { pathList  } from 'https://ghchenjingqi.github.io/resources/mds/pathList.js'
+import { getMdList } from '@/utils/mdlist.js'
 import { initWeather,weatherList, updataWeather } from '@/utils/weather.js'
 
 const weather = ref({wt: '',})
 const knows = ref(0)
 const news = ref([])
+const pathList = ref([])
 
 const loading = ref(false)
 const updataWeatherHandle = async ()=>{ 
@@ -67,16 +69,26 @@ const updataWeatherHandle = async ()=>{
     },1500)
 }
 const getNewsHandle = async ()=>{
-    news.value = await api.invoke('get-news') 
+    news.value = await api.invoke('get-news') || [{title:"暂无数据"}]
+}
+
+
+const getCity=(str)=>{
+    if (!str) "未知"
+    return str?.substr(0, str.length - 1)
 }
 let timer = null
 onMounted( async()=>{
     loading.value = true
-    knows.value = pathList.length
+    pathList.value = await getMdList() || [];
+
+    knows.value = pathList.value.length
     const { data } = await initWeather()
     // console.log("天气",data)
-    weather.value = data
+    weather.value = data 
     weather.value.wt = weatherList[data.weather]
+
+
     setTimeout(()=>{ 
         loading.value  = false
     },1500)

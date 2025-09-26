@@ -62,7 +62,12 @@ export async function getWeather(city) {
 
 
 let weatherCache = {
-    data: null,
+    data: {
+      city:"unknow",
+      reportTime:"unknow",
+      wind:"unknow",
+      temperature:"unknow"
+    },
     timestamp: 0
 };
  
